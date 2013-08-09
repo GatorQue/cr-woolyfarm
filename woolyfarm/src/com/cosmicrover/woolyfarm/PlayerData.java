@@ -1,6 +1,5 @@
 package com.cosmicrover.woolyfarm;
 
-import java.util.HashMap;
 import java.util.NoSuchElementException;
 import java.util.Scanner;
 import java.util.StringTokenizer;
@@ -8,8 +7,6 @@ import java.util.StringTokenizer;
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.files.FileHandle;
 import com.badlogic.gdx.graphics.g2d.TextureAtlas;
-import com.badlogic.gdx.graphics.g2d.TextureRegion;
-import com.badlogic.gdx.graphics.g2d.TextureAtlas.AtlasRegion;
 import com.badlogic.gdx.utils.ArrayMap;
 import com.badlogic.gdx.utils.Json;
 import com.badlogic.gdx.utils.JsonValue;
@@ -52,18 +49,6 @@ public class PlayerData extends GameData {
 	/// Keep track of our GameManager object provided at init
 	private GameManager gameManager = null;
 	
-	/// Maps region name to AtlasRegion information to texture
-	private HashMap<String, AtlasRegion> levelRegions;
-
-	/// TextureAtlas that can carve up the sprite texture to show the correct texture
-	private TextureAtlas levelTextureAtlas;
-
-	/// Maps region name to AtlasRegion information to texture
-	private HashMap<String, AtlasRegion> spriteRegions;
-
-	/// TextureAtlas that can carve up the sprite texture to show the correct texture
-	private TextureAtlas spriteTextureAtlas;
-	
 	/// Array of level data 
 	private ArrayMap<String, LevelData> levels;
 	
@@ -92,38 +77,6 @@ public class PlayerData extends GameData {
 		this.currentLevel = currentLevel;
 	}
 
-	public TextureRegion getLevelTexture(String name) {
-		// First time retrieving a Sprite texture? then initialize it now
-		if(levelRegions == null) {
-			// Create a hash map for looking up texture regions by string name found in SpriteComponent
-			levelRegions = new HashMap<String, AtlasRegion>();
-			levelTextureAtlas = gameManager.getAssetManager().get("textures/select.pack");
-			// Create a map of each region available in our sprite TextureAtlas
-			for (AtlasRegion region : levelTextureAtlas.getRegions()) {
-				levelRegions.put(region.name, region);
-			}
-		}
-
-		// Return the texture requested
-		return levelRegions.get(name);
-	}
-	
-	public TextureRegion getSpriteTexture(String name) {
-		// First time retrieving a Sprite texture? then initialize it now
-		if(spriteRegions == null) {
-			// Create a hash map for looking up texture regions by string name found in SpriteComponent
-			spriteRegions = new HashMap<String, AtlasRegion>();
-			spriteTextureAtlas = gameManager.getAssetManager().get("textures/sprites.pack");
-			// Create a map of each region available in our sprite TextureAtlas
-			for (AtlasRegion region : spriteTextureAtlas.getRegions()) {
-				spriteRegions.put(region.name, region);
-			}
-		}
-
-		// Return the texture requested
-		return spriteRegions.get(name);
-	}
-	
 	public ArrayMap<String, LevelData> getLevels() {
 		return levels;
 	}
@@ -134,7 +87,7 @@ public class PlayerData extends GameData {
 		this.gameManager = gameManager;
 
 		// Tell our asset manager to load our sprites texture pack
-		gameManager.getAssetManager().load("textures/select.pack", TextureAtlas.class);
+		gameManager.getAssetManager().load("textures/level_select.pack", TextureAtlas.class);
 		gameManager.getAssetManager().load("textures/sprites.pack", TextureAtlas.class);
 		
 		// Create our screens next

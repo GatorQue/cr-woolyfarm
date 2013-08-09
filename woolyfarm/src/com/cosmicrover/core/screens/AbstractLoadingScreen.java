@@ -51,7 +51,7 @@ public abstract class AbstractLoadingScreen extends AbstractScreen {
 		this.lagDelay_s = lagDelay_s;
 		
 		// Note the creation of each screen in our debug log
-		Gdx.app.debug(this.getClass().getSimpleName(), "Creating loading screen with a lag delay=" + lagDelay_s);
+		Gdx.app.debug(this.getClass().getName(), "Creating loading screen with a lag delay=" + lagDelay_s);
 	}
 	
 	/**
@@ -121,7 +121,7 @@ public abstract class AbstractLoadingScreen extends AbstractScreen {
 		done = false;
 		
 		// Indicate the start of loading data to be restored
-		Gdx.app.log(this.getClass().getSimpleName(), "Loading data please wait...");
+		Gdx.app.log(this.getClass().getName(), "Loading data please wait...");
 	}
 
 	@Override
@@ -133,6 +133,6 @@ public abstract class AbstractLoadingScreen extends AbstractScreen {
 		super.hide();
 		
 		// Indicate the average loading time to our log file
-		Gdx.app.log(this.getClass().getSimpleName(), "Loading data completed");
+		Gdx.app.log(this.getClass().getName(), "Loading data completed");
 	}
 }

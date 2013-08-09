@@ -1,12 +1,16 @@
 package com.cosmicrover.woolyfarm.screens;
 
+import java.util.HashMap;
+
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.GL10;
 import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.Texture.TextureFilter;
 import com.badlogic.gdx.graphics.g2d.BitmapFont;
+import com.badlogic.gdx.graphics.g2d.TextureAtlas;
 import com.badlogic.gdx.graphics.g2d.TextureRegion;
+import com.badlogic.gdx.graphics.g2d.TextureAtlas.AtlasRegion;
 import com.badlogic.gdx.scenes.scene2d.Actor;
 import com.badlogic.gdx.scenes.scene2d.Stage;
 import com.badlogic.gdx.scenes.scene2d.ui.Image;
@@ -37,6 +41,12 @@ public class LevelSelectScreen extends AbstractScreen {
 	private BitmapFont buttonFont = null;
 	private ButtonListener buttonListener = null;
 
+	/// Maps region name to AtlasRegion information to texture
+	private HashMap<String, AtlasRegion> levelRegions;
+
+	/// TextureAtlas that can carve up the sprite texture to show the correct texture
+	private TextureAtlas levelTextureAtlas;
+
 	public LevelSelectScreen(GameManager gameManager, int screenId) {
 		super("LevelSelectScreen", gameManager, screenId);
 	}
@@ -61,6 +71,14 @@ public class LevelSelectScreen extends AbstractScreen {
 		super.show();
 		
 		if(isFirstTime()) {
+			// Create a hash map for looking up texture regions by string name found in SpriteComponent
+			levelRegions = new HashMap<String, AtlasRegion>();
+			levelTextureAtlas = gameManager.getAssetManager().get("textures/level_select.pack");
+			// Create a map of each region available in our sprite TextureAtlas
+			for (AtlasRegion region : levelTextureAtlas.getRegions()) {
+				levelRegions.put(region.name, region);
+			}
+
 			// Create our stage objects on first time
 			createStage();
 			
@@ -177,19 +195,19 @@ public class LevelSelectScreen extends AbstractScreen {
 		unlockedButtonStyle.font = buttonFont;
 		unlockedButtonStyle.fontColor = Color.BLACK;
 		unlockedButtonStyle.overFontColor = Color.BLUE;
-		unlockedButtonStyle.disabled = new TextureRegionDrawable(playerData.getLevelTexture("level_locked"));
-		unlockedButtonStyle.up = new TextureRegionDrawable(playerData.getLevelTexture("level_unlocked_up"));
-		unlockedButtonStyle.down = new TextureRegionDrawable(playerData.getLevelTexture("level_unlocked_down"));
-		unlockedButtonStyle.over = new TextureRegionDrawable(playerData.getLevelTexture("level_unlocked_over"));
+		unlockedButtonStyle.disabled = new TextureRegionDrawable(levelRegions.get("level_locked"));
+		unlockedButtonStyle.up = new TextureRegionDrawable(levelRegions.get("level_unlocked_up"));
+		unlockedButtonStyle.down = new TextureRegionDrawable(levelRegions.get("level_unlocked_down"));
+		unlockedButtonStyle.over = new TextureRegionDrawable(levelRegions.get("level_unlocked_over"));
 
 		TextButtonStyle completedButtonStyle = new TextButtonStyle();
 		completedButtonStyle.font = buttonFont;
 		completedButtonStyle.fontColor = Color.BLACK;
 		completedButtonStyle.overFontColor = Color.BLUE;
-		completedButtonStyle.disabled = new TextureRegionDrawable(playerData.getLevelTexture("level_locked"));
-		completedButtonStyle.up = new TextureRegionDrawable(playerData.getLevelTexture("level_completed_up"));
-		completedButtonStyle.down = new TextureRegionDrawable(playerData.getLevelTexture("level_completed_down"));
-		completedButtonStyle.over = new TextureRegionDrawable(playerData.getLevelTexture("level_completed_over"));
+		completedButtonStyle.disabled = new TextureRegionDrawable(levelRegions.get("level_locked"));
+		completedButtonStyle.up = new TextureRegionDrawable(levelRegions.get("level_completed_up"));
+		completedButtonStyle.down = new TextureRegionDrawable(levelRegions.get("level_completed_down"));
+		completedButtonStyle.over = new TextureRegionDrawable(levelRegions.get("level_completed_over"));
 
 		// Clear our table of level buttons
 		levelTable.clear();

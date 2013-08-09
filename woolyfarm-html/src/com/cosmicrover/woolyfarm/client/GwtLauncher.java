@@ -1,5 +1,7 @@
 package com.cosmicrover.woolyfarm.client;
 
+import com.cosmicrover.core.GameEnvironment;
+import com.cosmicrover.core.GameEnvironment.Platform;
 import com.cosmicrover.woolyfarm.WoolyFarmGame;
 import com.badlogic.gdx.ApplicationListener;
 import com.badlogic.gdx.backends.gwt.GwtApplication;
@@ -14,6 +16,6 @@ public class GwtLauncher extends GwtApplication {
 
 	@Override
 	public ApplicationListener getApplicationListener () {
-		return new WoolyFarmGame();
+		return new WoolyFarmGame(new GameEnvironment(Platform.HTML));
 	}
 }
