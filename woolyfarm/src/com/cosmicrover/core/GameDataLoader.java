@@ -25,9 +25,41 @@ public class GameDataLoader<T extends GameData> extends AsynchronousAssetLoader<
 		super(resolver);
 	}
 
+    /**
+     * This method is responsible for saving the game data previously created
+     * or restored above.
+     * @param filename and path to where the data will be saved.
+     */
+	public static final void save(GameData gameData, String filename) {
+    	if(gameData != null) {
+    		// Do we have a game in progress to save?
+    		if(gameData.isInProgress()) {
+	        	Gdx.app.log( "GameDataLoader:save", "Saving data to '" + filename + "'" );
+	
+	            // create the JSON utility object
+	            Json json = new Json();
+	
+	            // create the handle for the profile data file
+	            FileHandle gameDataFile = Gdx.files.external(filename );
+	
+	            // Attempt to compress and save the game data
+	            try {
+	                // Retrieve data and encode as Base64 and write it to a file
+	                gameDataFile.writeString(Base64Coder.encodeString(json.toJson(gameData)), false);
+	    		} catch (Exception e) {
+	                // log the exception
+	            	Gdx.app.error( "GameDataLoader:save", "Unable to save data file '" + filename + "'", e);
+	    		}
+    		} else {
+    			Gdx.app.debug("GameDataLoader:save", "Game not in progress, skipping save");
+    		}
+    	} else {
+        	Gdx.app.error( "GameDataLoader:save", "GameData provided is null");
+    	}
+    }
+	
 	@Override
-	public void loadAsync(AssetManager manager, String fileName,
-			Parameters<T> parameter) {
+	public void loadAsync(AssetManager manager, String fileName, Parameters<T> parameter) {
 		// Make sure a gameData object was provided for us to load into
 		if(parameter.gameData != null) {
 			FileHandle gameDataFile = resolve(fileName);
@@ -65,15 +97,13 @@ public class GameDataLoader<T extends GameData> extends AsynchronousAssetLoader<
 	}
 
 	@Override
-	public T loadSync(AssetManager manager, String fileName,
-			Parameters<T> parameter) {
+	public T loadSync(AssetManager manager, String fileName, Parameters<T> parameter) {
 		return parameter.gameData;
 	}
 
 	@SuppressWarnings("rawtypes")
 	@Override
-	public Array<AssetDescriptor> getDependencies(String fileName,
-			Parameters<T> parameter) {
+	public Array<AssetDescriptor> getDependencies(String fileName, Parameters<T> parameter) {
 		// TODO: Replace this with a list of maps, textures, or other asset
 		// resources that need to be loaded too
 //		Array<AssetDescriptor> dependencies = new Array<AssetDescriptor>();

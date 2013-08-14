@@ -11,9 +11,7 @@ import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.graphics.glutils.ShapeRenderer;
 import com.badlogic.gdx.maps.tiled.TiledMap;
 import com.badlogic.gdx.maps.tiled.renderers.OrthogonalTiledMapRenderer;
-import com.badlogic.gdx.utils.Base64Coder;
 import com.badlogic.gdx.utils.Disposable;
-import com.badlogic.gdx.utils.Json;
 import com.cosmicrover.core.GameEnvironment.Platform;
 import com.cosmicrover.core.screens.AbstractScreen;
 
@@ -267,33 +265,7 @@ public class GameManager implements Disposable {
      * @param filename and path to where the data will be saved.
      */
     public final void saveData(String filename) {
-    	if(gameData != null) {
-    		// Do we have a game in progress to save?
-    		if(gameData.isInProgress()) {
-	        	Gdx.app.log( "GameManager:saveData", "Saving data to '" + filename + "'" );
-	
-	            // create the JSON utility object
-	            Json json = new Json();
-	
-	            // create the handle for the profile data file
-	            FileHandle gameDataFile = Gdx.files.external(filename );
-	
-	            // Attempt to compress and save the game data
-	            try {
-	                // Retrieve data and encode as Base64 and write it to a file
-	                gameDataFile.writeString(Base64Coder.encodeString(json.toJson(gameData)), false);
-	    		} catch (Exception e) {
-	                // log the exception
-	            	Gdx.app.error( "GameManager:saveData",
-	            			"Unable to save data file '" + filename + "'", e);
-	    		}
-    		} else {
-    			Gdx.app.debug("GameManager:saveData", "Game not in progress, skipping save");
-    		}
-    	} else {
-        	Gdx.app.log( "GameManager:saveData",
-        			"Data missing, did you forget to call initData first?" );
-    	}
+    	GameDataLoader.save(gameData, filename);
     }
 
 	@Override

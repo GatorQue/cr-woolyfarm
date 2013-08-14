@@ -21,18 +21,6 @@ import com.cosmicrover.woolyfarm.screens.MainMenuScreen;
 import com.cosmicrover.woolyfarm.screens.OptionsScreen;
 
 public class PlayerData extends GameData {
-	/// String name for the Level directory
-	private static final String LEVEL_DIRECTORY = "levels/";
-	
-	/// String name for the Level Group files
-	private static final String LEVEL_NAME = "level_";
-	
-	/// String name for the Level extension
-	private static final String LEVEL_EXT = ".lvl";
-	
-	/// String name for the Level Group extension
-	private static final String LEVEL_GROUP_EXT = ".grp";
-	
 	/// String name for the default level (tutorial)
 	private static final String DEFAULT_LEVEL = "Tutorial";
 	
@@ -86,6 +74,9 @@ public class PlayerData extends GameData {
 		// Keep track of the GameManager object provided
 		this.gameManager = gameManager;
 
+		// Add our LevelData loader to our AssetManager
+		gameManager.getAssetManager().setLoader(LevelData.class, LevelData.LEVEL_EXT, new LevelDataLoader());
+
 		// Tell our asset manager to load our sprites texture pack
 		gameManager.getAssetManager().load("textures/level_select.pack", TextureAtlas.class);
 		gameManager.getAssetManager().load("textures/sprites.pack", TextureAtlas.class);
@@ -99,7 +90,6 @@ public class PlayerData extends GameData {
 
 		// Set the initial next screenId value for LoadingScreen to the Main Menu
 		AbstractLoadingScreen.setNextScreenId(MAIN_MENU_SCREEN);
-		
 	}
 
 	@Override
@@ -219,7 +209,7 @@ public class PlayerData extends GameData {
 	private void discoverLevels() {
 		// Look for level group files and load each of them in
 		for(int i=0;i<100;i++) {
-			String levelGroupFilename = LEVEL_DIRECTORY + LEVEL_NAME + i + LEVEL_GROUP_EXT;
+			String levelGroupFilename = LevelData.LEVEL_DIRECTORY + LevelData.LEVEL_NAME + i + LevelData.LEVEL_GROUP_EXT;
 
 			// Loop through each levelGroup file that exists
 			FileHandle levelGroupFile = Gdx.files.internal(levelGroupFilename);
