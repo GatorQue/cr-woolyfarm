@@ -4,7 +4,7 @@ import com.badlogic.gdx.Gdx;
 import com.cosmicrover.core.GameData;
 import com.cosmicrover.core.GameManager;
 
-public abstract class AbstractLoadingScreen extends AbstractScreen {
+public abstract class LoadingScreen extends AbstractScreen {
 	/// The screenId to switch to when Loading screen completes (static to make
 	/// it possible to change without having an address to AbstractLoadingScreen)
 	private static int nextScreenId = GameData.EXIT_GAME_SCREEN;
@@ -29,7 +29,7 @@ public abstract class AbstractLoadingScreen extends AbstractScreen {
 	 * user can see the 100% complete screen.
 	 * @param gameManager to use for switching screens
 	 */
-	public AbstractLoadingScreen(String screenName, GameManager gameManager) {
+	public LoadingScreen(String screenName, GameManager gameManager) {
 		this(screenName, gameManager, DEFAULT_LAG_DELAY_S);
 	}
 
@@ -44,7 +44,7 @@ public abstract class AbstractLoadingScreen extends AbstractScreen {
 	 * @param gameManager to use for switching screens
 	 * @param lagDelay_s in seconds to wait before switching screens
 	 */
-	public AbstractLoadingScreen(String screenName, GameManager gameManager, float lagDelay_s) {
+	public LoadingScreen(String screenName, GameManager gameManager, float lagDelay_s) {
 		super(screenName, gameManager);
 
 		// Lag delay after loading completes to wait before switching to next screen

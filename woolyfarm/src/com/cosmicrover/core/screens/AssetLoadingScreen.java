@@ -11,7 +11,7 @@ import com.badlogic.gdx.scenes.scene2d.Stage;
 import com.badlogic.gdx.scenes.scene2d.ui.Image;
 import com.cosmicrover.core.GameManager;
 
-public class AssetLoadingScreen extends AbstractLoadingScreen {
+public class AssetLoadingScreen extends LoadingScreen {
 
 	/// Default Lag delay for this Loading screen
 	private static final float DEFAULT_LAG_DELAY_S = 0.0f;

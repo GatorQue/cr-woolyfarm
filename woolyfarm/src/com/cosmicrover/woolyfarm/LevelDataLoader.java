@@ -12,7 +12,7 @@ import com.badlogic.gdx.utils.Array;
 import com.badlogic.gdx.utils.Base64Coder;
 import com.badlogic.gdx.utils.Json;
 import com.badlogic.gdx.utils.JsonReader;
-import com.cosmicrover.core.screens.AbstractLoadingScreen;
+import com.cosmicrover.core.screens.LoadingScreen;
 
 public class LevelDataLoader extends AsynchronousAssetLoader<LevelData, LevelDataLoader.Parameters> {
 	public LevelDataLoader() {
@@ -80,7 +80,7 @@ public class LevelDataLoader extends AsynchronousAssetLoader<LevelData, LevelDat
 		        	manager.unload(fileName);
 		        	
 		        	// Switch to LevelSelectScreen
-		        	AbstractLoadingScreen.setNextScreenId(PlayerData.LEVEL_SELECT_SCREEN);
+		        	LoadingScreen.setNextScreenId(PlayerData.LEVEL_SELECT_SCREEN);
 	            }
 	        } else {
 	        	// Indicate that the game data file doesn't exist
@@ -95,8 +95,8 @@ public class LevelDataLoader extends AsynchronousAssetLoader<LevelData, LevelDat
 //	        	// Explicitly unload this asset
 //	        	manager.unload(fileName);
 //	        	
-//	        	// Switch to LevelSelectScreen
-//	        	AbstractLoadingScreen.setNextScreenId(PlayerData.LEVEL_SELECT_SCREEN);
+	        	// Switch to LevelSelectScreen
+	        	LoadingScreen.setNextScreenId(PlayerData.LEVEL_EDITOR_SCREEN);
 	        }
 		} else {
 			Gdx.app.error("LevelDataLoader:loadAsync", "LevelData parameter missing");
@@ -105,7 +105,7 @@ public class LevelDataLoader extends AsynchronousAssetLoader<LevelData, LevelDat
         	manager.unload(fileName);
         	
         	// Switch to LevelSelectScreen
-        	AbstractLoadingScreen.setNextScreenId(PlayerData.LEVEL_SELECT_SCREEN);
+        	LoadingScreen.setNextScreenId(PlayerData.LEVEL_SELECT_SCREEN);
 		}
 	}
 

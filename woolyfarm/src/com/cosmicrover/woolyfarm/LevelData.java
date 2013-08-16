@@ -54,7 +54,7 @@ public class LevelData implements Serializable {
 	public int numDogs = 0;
 	public int maxDogs = 0;
 	public int numFences = 0;
-	public int maxFences = 10;
+	public int maxFences = 0;
 	public int mapRows = 0;
 	public int mapCols = 0;
 	public int fenceRows = 1; // rows*2+1
@@ -170,6 +170,27 @@ public class LevelData implements Serializable {
 		
 		// Set our loaded flag to true
 		loaded = true;
+	}
+	
+	public void updateOriginal() {
+		// Update our number of fences and dogs remaining values
+		maxFences = numFences;
+		maxDogs = numDogs;
+		
+		// Update our original animal placement information
+		for(int row=0; row<mapRows; row++) {
+			for(int col=0; col<mapCols; col++) {
+				origAnimals[row][col] = mapAnimals[row][col];
+			}
+		}
+
+		// Update our original fence placement information
+		for(int row=0; row<fenceRows; row++) {
+			for(int col=0; col<fenceCols; col++) {
+				origFenceHorizontal[row][col] = mapFenceHorizontal[row][col];
+				origFenceVertical[row][col] = mapFenceVertical[row][col];
+			}
+		}
 	}
 
 	public void resetLevel() {

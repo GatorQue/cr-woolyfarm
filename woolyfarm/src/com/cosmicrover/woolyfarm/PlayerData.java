@@ -12,9 +12,10 @@ import com.badlogic.gdx.utils.Json;
 import com.badlogic.gdx.utils.JsonValue;
 import com.cosmicrover.core.GameData;
 import com.cosmicrover.core.GameManager;
-import com.cosmicrover.core.screens.AbstractLoadingScreen;
+import com.cosmicrover.core.screens.LoadingScreen;
 import com.cosmicrover.core.screens.AbstractScreen;
 import com.cosmicrover.core.screens.AssetLoadingScreen;
+import com.cosmicrover.woolyfarm.screens.LevelEditorScreen;
 import com.cosmicrover.woolyfarm.screens.LevelPlayScreen;
 import com.cosmicrover.woolyfarm.screens.LevelSelectScreen;
 import com.cosmicrover.woolyfarm.screens.MainMenuScreen;
@@ -30,6 +31,7 @@ public class PlayerData extends GameData {
 	public static final int OPTIONS_SCREEN             = 3;
 	public static final int LEVEL_SELECT_SCREEN        = 4;
 	public static final int LEVEL_PLAY_SCREEN          = 5;
+	public static final int LEVEL_EDITOR_SCREEN        = 6;
 
 	/// Data file format version number 
 	private static final int DATA_FORMAT_VERSION = 1;
@@ -87,9 +89,10 @@ public class PlayerData extends GameData {
 		screenManager.registerScreen(OPTIONS_SCREEN, new OptionsScreen(gameManager, MAIN_MENU_SCREEN));
 		screenManager.registerScreen(LEVEL_SELECT_SCREEN, new LevelSelectScreen(gameManager, MAIN_MENU_SCREEN));
 		screenManager.registerScreen(LEVEL_PLAY_SCREEN, new LevelPlayScreen(gameManager, LEVEL_SELECT_SCREEN));
+		screenManager.registerScreen(LEVEL_EDITOR_SCREEN, new LevelEditorScreen(gameManager, LEVEL_SELECT_SCREEN));
 
 		// Set the initial next screenId value for LoadingScreen to the Main Menu
-		AbstractLoadingScreen.setNextScreenId(MAIN_MENU_SCREEN);
+		LoadingScreen.setNextScreenId(MAIN_MENU_SCREEN);
 	}
 
 	@Override
@@ -207,6 +210,8 @@ public class PlayerData extends GameData {
 	 * list of levels available to play.
 	 */
 	private void discoverLevels() {
+		// TODO: We also need to check the "custom" levels group file
+		
 		// Look for level group files and load each of them in
 		for(int i=0;i<100;i++) {
 			String levelGroupFilename = LevelData.LEVEL_DIRECTORY + LevelData.LEVEL_NAME + i + LevelData.LEVEL_GROUP_EXT;
