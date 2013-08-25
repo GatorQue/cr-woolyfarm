@@ -1,6 +1,7 @@
 package com.cosmicrover.woolyfarm.screens;
 
 import com.badlogic.gdx.Gdx;
+import com.badlogic.gdx.audio.Music;
 import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.Texture.TextureFilter;
@@ -15,16 +16,26 @@ import com.badlogic.gdx.scenes.scene2d.ui.Table;
 import com.badlogic.gdx.scenes.scene2d.ui.TextButton.TextButtonStyle;
 import com.badlogic.gdx.scenes.scene2d.utils.TextureRegionDrawable;
 import com.cosmicrover.core.GameEnvironment.Platform;
+import com.cosmicrover.core.assets.GameData;
 import com.cosmicrover.core.GameManager;
-import com.cosmicrover.woolyfarm.LevelData.Sprites;
+import com.cosmicrover.woolyfarm.assets.WoolyGroupData;
+import com.cosmicrover.woolyfarm.assets.WoolyLevelData;
+import com.cosmicrover.woolyfarm.assets.WoolyLevelData.Sprites;
 
-public class LevelPlayScreen extends LevelScreen {
+public class LevelPlayScreen extends LevelScreen<WoolyGroupData> {
 	protected Label fencesLabel = null;
 	protected Label dogsLabel = null;
 	protected Label levelNameLabel = null;
+	protected Button hintButton = null;
 
-	public LevelPlayScreen(GameManager gameManager, int screenId) {
-		super("LevelPlayScreen", gameManager, screenId);
+	public LevelPlayScreen(GameManager<WoolyLevelData, WoolyGroupData> gameManager, int screenId) {
+		super("LevelPlayScreen", GameData.LEVEL_PLAY_SCREEN, gameManager, screenId);
+	}
+	
+	@Override
+	protected Music createMusic() {
+		// Retrieve our level play music track
+		return Gdx.audio.newMusic(Gdx.files.internal("music/level_play.mp3"));
 	}
 	
 	@Override
@@ -32,9 +43,10 @@ public class LevelPlayScreen extends LevelScreen {
         // Create our information bar starting by gathering texture regions for each icon in our information bar
         TextureRegionDrawable fencesIcon = new TextureRegionDrawable(spriteRegions.get("fences_icon"));
         TextureRegionDrawable dogsIcon = new TextureRegionDrawable(spriteRegions.get("dogs_icon"));
-        TextureRegionDrawable backIcon = new TextureRegionDrawable(spriteRegions.get("back_icon"));
+        TextureRegionDrawable backIcon = new TextureRegionDrawable(spriteRegions.get("level_select_icon"));
         //TextureRegionDrawable nextIcon = new TextureRegionDrawable(spriteRegions.get("next_icon"));
         TextureRegionDrawable resetIcon = new TextureRegionDrawable(spriteRegions.get("restart_icon"));
+        TextureRegionDrawable hintIcon = new TextureRegionDrawable(spriteRegions.get("hint_icon"));
 
         // Retrieve the font we will use for text messages
 		Texture fontTexture = new Texture(Gdx.files.internal("textures/font_normal.png"));
@@ -78,6 +90,11 @@ public class LevelPlayScreen extends LevelScreen {
 		// Add level name
 		levelNameLabel = new Label(levelData.name, labelStyle);
 		stageTable.add(levelNameLabel).fill().expandX().spaceRight(5.0f);
+
+		// Add our hint button next
+		hintButton = new Button(hintIcon);
+		hintButton.addListener(buttonListener);
+		stageTable.add(hintButton).right().fillY();
 
 		// Add our restart button last of all
 		restartButton = new Button(resetIcon);
@@ -164,10 +181,12 @@ public class LevelPlayScreen extends LevelScreen {
 		dogsLabel.setText("" + levelData.numDogs);
 	}
 
+
 	@Override
 	protected void onOtherClick(Actor actor) {
-		// TODO Auto-generated method stub
-		
+		// Handle Hint button
+		if(actor.equals(hintButton)) {
+			// TODO: Provide hint implementation
+		}
 	}
-	
 }

@@ -2,13 +2,15 @@ package com.cosmicrover.core;
 
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.utils.ArrayMap;
+import com.cosmicrover.core.assets.GroupData;
+import com.cosmicrover.core.assets.LevelData;
 import com.cosmicrover.core.screens.AbstractScreen;
 
-public class ScreenManager {
-	private final ArrayMap<Integer, AbstractScreen> screenMap;
+public class ScreenManager<L extends LevelData, G extends GroupData<L>> {
+	private final ArrayMap<Integer, AbstractScreen<L,G>> screenMap;
 	
 	public ScreenManager() {
-		screenMap = new ArrayMap<Integer, AbstractScreen>();
+		screenMap = new ArrayMap<Integer, AbstractScreen<L,G>>();
 	}
 	
 	/**
@@ -17,7 +19,7 @@ public class ScreenManager {
 	 * @param screenId to use for the screen
 	 * @param screen object that inherits from AbstractScreen
 	 */
-	public void registerScreen(int screenId, AbstractScreen screen) {
+	public void registerScreen(int screenId, AbstractScreen<L,G> screen) {
 		if(!screenMap.containsKey(screenId)) {
 			screenMap.put(screenId, screen);
 		} else {
@@ -39,7 +41,7 @@ public class ScreenManager {
 	 * screen object address to identify the screen object.
 	 * @param screen object to unregister
 	 */
-	public void unregisterScreen(AbstractScreen screen) {
+	public void unregisterScreen(AbstractScreen<L,G> screen) {
 		screenMap.removeValue(screen, true);
 	}
 	
@@ -49,7 +51,7 @@ public class ScreenManager {
 	 * @param screen to find screenId for
 	 * @return screenId or 0 if none was found
 	 */
-	public int getScreenId(AbstractScreen screen) {
+	public int getScreenId(AbstractScreen<L,G> screen) {
 		int anScreenId = 0;
 		if(screenMap.containsValue(screen, true)) {
 			anScreenId = screenMap.getKey(screen, true);
@@ -62,7 +64,7 @@ public class ScreenManager {
 	 * @param screenId to lookup
 	 * @return screen object or null if screenId can't be found
 	 */
-	public AbstractScreen getScreen(int screenId) {
+	public AbstractScreen<L,G> getScreen(int screenId) {
 		return screenMap.get(screenId);
 	}
 }

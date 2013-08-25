@@ -17,9 +17,12 @@ import com.badlogic.gdx.scenes.scene2d.ui.Label.LabelStyle;
 import com.badlogic.gdx.scenes.scene2d.ui.TextButton.TextButtonStyle;
 import com.badlogic.gdx.scenes.scene2d.utils.ChangeListener;
 import com.cosmicrover.core.GameManager;
+import com.cosmicrover.core.assets.GameData;
+import com.cosmicrover.core.assets.GroupData;
+import com.cosmicrover.core.assets.LevelData;
 import com.cosmicrover.core.screens.AbstractScreen;
 
-public class OptionsScreen extends AbstractScreen {
+public class OptionsScreen<L extends LevelData, G extends GroupData<L>> extends AbstractScreen<L,G> {
 	/// Scene2d used by this Screen
 	private Stage stage = null;
 	private Image background = null;
@@ -28,8 +31,8 @@ public class OptionsScreen extends AbstractScreen {
 	private TextButton abandonButton = null;
 	private TextButton backButton = null;
 
-	public OptionsScreen(GameManager gameManager, int screenId) {
-		super("OptionsScreen", gameManager, screenId);
+	public OptionsScreen(GameManager<L,G> gameManager, int backScreenId) {
+		super("OptionsScreen", GameData.OPTIONS_SCREEN, gameManager, backScreenId);
 		
 		// Note the creation of each screen in our debug log
 		Gdx.app.debug("SettingsScreen", "Creating Options screen");
@@ -101,7 +104,7 @@ public class OptionsScreen extends AbstractScreen {
 			ButtonListener buttonListener = new ButtonListener();
 			
 			// Add our abandon game button if game is in progress
-			if(!gameManager.getData().isNewGame()) {
+			if(!gameManager.data.isNewGame()) {
 				abandonButton = new TextButton("Reset History", buttonStyle);
 				abandonButton.addListener(buttonListener);
 				table.right().add(abandonButton).expandY().fill();
@@ -155,7 +158,7 @@ public class OptionsScreen extends AbstractScreen {
 		public void changed(ChangeEvent event, Actor actor) {
 			if(actor.equals(abandonButton)) {
 				Gdx.app.log("OptionsScreen:ButtonListener", "Reset History");
-				gameManager.getData().resetGame();
+				gameManager.data.resetGame();
 				actor.remove();
 			} else if(actor.equals(backButton)) {
 				Gdx.app.log("OptionsScreen:ButtonListener", "Back");

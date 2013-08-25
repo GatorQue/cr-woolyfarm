@@ -1,6 +1,7 @@
 package com.cosmicrover.woolyfarm.screens;
 
 import com.badlogic.gdx.Gdx;
+import com.badlogic.gdx.audio.Music;
 import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.Texture.TextureFilter;
@@ -19,30 +20,37 @@ import com.badlogic.gdx.scenes.scene2d.ui.TextField.TextFieldStyle;
 import com.badlogic.gdx.scenes.scene2d.utils.TextureRegionDrawable;
 import com.cosmicrover.core.GameManager;
 import com.cosmicrover.core.GameEnvironment.Platform;
-import com.cosmicrover.woolyfarm.LevelData;
-import com.cosmicrover.woolyfarm.LevelData.Sprites;
-import com.cosmicrover.woolyfarm.LevelDataLoader;
-import com.cosmicrover.woolyfarm.PlayerData;
+import com.cosmicrover.core.assets.GameData;
+import com.cosmicrover.core.assets.loaders.JsonDataLoader;
+import com.cosmicrover.woolyfarm.assets.WoolyGroupData;
+import com.cosmicrover.woolyfarm.assets.WoolyLevelData;
+import com.cosmicrover.woolyfarm.assets.WoolyLevelData.Sprites;
 
-public class LevelEditorScreen extends LevelScreen {
+public class LevelEditorScreen extends LevelScreen<WoolyGroupData> {
 	protected Label fencesLabel = null;
 	protected Label dogsLabel = null;
 	protected TextField levelName = null;
 	protected Button saveButton = null;
 
-	public LevelEditorScreen(GameManager gameManager, int screenId) {
-		super("LevelEditorScreen", gameManager, screenId);
+	public LevelEditorScreen(GameManager<WoolyLevelData, WoolyGroupData> gameManager, int screenId) {
+		super("LevelEditorScreen", GameData.LEVEL_SELECT_SCREEN, gameManager, screenId);
 	}
 
+	@Override
+	protected Music createMusic() {
+		// Retrieve our level editor music track
+		return Gdx.audio.newMusic(Gdx.files.internal("music/level_editor.mp3"));
+	}
+	
 	@Override
 	protected void createInfoBar() {
         // Create our information bar starting by gathering texture regions for each icon in our information bar
         TextureRegionDrawable fencesIcon = new TextureRegionDrawable(spriteRegions.get("fences_icon"));
         TextureRegionDrawable dogsIcon = new TextureRegionDrawable(spriteRegions.get("dogs_icon"));
-        TextureRegionDrawable backIcon = new TextureRegionDrawable(spriteRegions.get("back_icon"));
+        TextureRegionDrawable backIcon = new TextureRegionDrawable(spriteRegions.get("level_select_icon"));
         //TextureRegionDrawable nextIcon = new TextureRegionDrawable(spriteRegions.get("next_icon"));
         TextureRegionDrawable resetIcon = new TextureRegionDrawable(spriteRegions.get("restart_icon"));
-        TextureRegionDrawable cursorIcon = new TextureRegionDrawable(spriteRegions.get("cursor_icon"));
+        TextureRegionDrawable cursorIcon = new TextureRegionDrawable(spriteRegions.get("text_cursor_icon"));
         TextureRegionDrawable saveIcon = new TextureRegionDrawable(spriteRegions.get("save_icon"));
 
         // Retrieve the font we will use for text messages
@@ -216,11 +224,25 @@ public class LevelEditorScreen extends LevelScreen {
 	protected void onOtherClick(Actor actor) {
 		// Handle Save button
 		if(actor.equals(saveButton)) {
+			// Take the current level state and make it the original level state
 			levelData.updateOriginal();
-			// TODO: Replace this with a more elegant solution that can also
-			// add the new level to the custom levels group
-			LevelDataLoader.save(levelData, GameManager.DATA_DIRECTORY + LevelData.LEVEL_DIRECTORY + LevelData.LEVEL_NAME + levelData.id + LevelData.LEVEL_EXT);
-			gameManager.setScreen(PlayerData.LEVEL_SELECT_SCREEN);
+			
+			// Save the level state to a file
+			JsonDataLoader.save(levelData);
+
+			// Get the currently selected GroupData object
+			WoolyGroupData groupData = gameManager.data.getCurrentGroup();
+			
+			// If this is the first level, make sure its unlocked when groupData is saved
+			if(levelData.levelId == 0) {
+				levelData.locked = false;
+			}
+
+			// Save the group data file
+			JsonDataLoader.save(groupData);
+
+			// Switch back to the previous screen
+			gameManager.setScreen(getBackScreenId());
 		}
 	}
 }

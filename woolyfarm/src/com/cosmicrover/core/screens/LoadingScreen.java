@@ -1,10 +1,12 @@
 package com.cosmicrover.core.screens;
 
 import com.badlogic.gdx.Gdx;
-import com.cosmicrover.core.GameData;
 import com.cosmicrover.core.GameManager;
+import com.cosmicrover.core.assets.GameData;
+import com.cosmicrover.core.assets.GroupData;
+import com.cosmicrover.core.assets.LevelData;
 
-public abstract class LoadingScreen extends AbstractScreen {
+public abstract class LoadingScreen<L extends LevelData, G extends GroupData<L>> extends AbstractScreen<L,G> {
 	/// The screenId to switch to when Loading screen completes (static to make
 	/// it possible to change without having an address to AbstractLoadingScreen)
 	private static int nextScreenId = GameData.EXIT_GAME_SCREEN;
@@ -27,10 +29,12 @@ public abstract class LoadingScreen extends AbstractScreen {
 	 * Creates a AbstractLoadingScreen with default lag delay of 0.2 seconds to
 	 * wait before switching to the next screen (see setNextScreenId) so the
 	 * user can see the 100% complete screen.
-	 * @param gameManager to use for switching screens
+	 * @param[in] screenName for this screen
+	 * @param[in] screenId for this screen
+	 * @param[in] gameManager to use for retrieving game data and switching screens
 	 */
-	public LoadingScreen(String screenName, GameManager gameManager) {
-		this(screenName, gameManager, DEFAULT_LAG_DELAY_S);
+	public LoadingScreen(String screenName, int screenId, GameManager<L,G> gameManager) {
+		this(screenName, screenId, gameManager, DEFAULT_LAG_DELAY_S);
 	}
 
 	/**
@@ -41,11 +45,13 @@ public abstract class LoadingScreen extends AbstractScreen {
 	 * screen that is masking as the loading screen) or see the loading bar
 	 * reach 100%.
 	 * 
-	 * @param gameManager to use for switching screens
-	 * @param lagDelay_s in seconds to wait before switching screens
+	 * @param[in] screenName for this screen
+	 * @param[in] screenId for this screen
+	 * @param[in] gameManager to use for retrieving game data and switching screens
+	 * @param[in] lagDelay_s in seconds to wait before switching screens
 	 */
-	public LoadingScreen(String screenName, GameManager gameManager, float lagDelay_s) {
-		super(screenName, gameManager);
+	public LoadingScreen(String screenName, int screenId, GameManager<L,G> gameManager, float lagDelay_s) {
+		super(screenName, screenId, gameManager);
 
 		// Lag delay after loading completes to wait before switching to next screen
 		this.lagDelay_s = lagDelay_s;
@@ -61,7 +67,7 @@ public abstract class LoadingScreen extends AbstractScreen {
 	 * @param screenId to switch to after data is loaded (defaults to exit)
 	 */
 	public static final void setNextScreenId(int screenId) {
-		Gdx.app.debug("AbstractLoadingScreen", "Setting next screenId="+screenId);
+		Gdx.app.debug("LoadingScreen", "Setting next screenId="+screenId);
 		nextScreenId = screenId;
 	}
 
@@ -121,7 +127,7 @@ public abstract class LoadingScreen extends AbstractScreen {
 		done = false;
 		
 		// Indicate the start of loading data to be restored
-		Gdx.app.log(this.getClass().getName(), "Loading data please wait...");
+		Gdx.app.log(this.getClass().getName(), "Loading, please wait...");
 	}
 
 	@Override
@@ -133,6 +139,6 @@ public abstract class LoadingScreen extends AbstractScreen {
 		super.hide();
 		
 		// Indicate the average loading time to our log file
-		Gdx.app.log(this.getClass().getName(), "Loading data completed");
+		Gdx.app.log(this.getClass().getName(), "Loading complete");
 	}
 }

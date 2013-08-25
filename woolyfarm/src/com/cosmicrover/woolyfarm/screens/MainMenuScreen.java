@@ -16,11 +16,13 @@ import com.badlogic.gdx.scenes.scene2d.ui.Table;
 import com.badlogic.gdx.scenes.scene2d.ui.TextButton;
 import com.badlogic.gdx.scenes.scene2d.ui.TextButton.TextButtonStyle;
 import com.badlogic.gdx.scenes.scene2d.utils.ChangeListener;
-import com.cosmicrover.core.GameData;
 import com.cosmicrover.core.GameManager;
+import com.cosmicrover.core.assets.GameData;
+import com.cosmicrover.core.assets.GroupData;
+import com.cosmicrover.core.assets.LevelData;
 import com.cosmicrover.core.screens.AbstractScreen;
 
-public class MainMenuScreen extends AbstractScreen {
+public class MainMenuScreen<L extends LevelData, G extends GroupData<L>> extends AbstractScreen<L,G> {
 	/// Scene2d used by this Screen
 	private Stage stage = null;
 	private Image background = null;
@@ -32,8 +34,8 @@ public class MainMenuScreen extends AbstractScreen {
 	private TextButton exitButton = null;
 	
 	
-	public MainMenuScreen(GameManager gameManager, String titleString) {
-		super("MainMenuScreen", gameManager);
+	public MainMenuScreen(GameManager<L,G> gameManager, String titleString) {
+		super("MainMenuScreen", GameData.MAIN_MENU_SCREEN, gameManager);
 		this.titleString = titleString;
 		
 		// Note the creation of each screen in our debug log
@@ -112,7 +114,7 @@ public class MainMenuScreen extends AbstractScreen {
 			table.row();
 
 			// Do we have a settings screen? then add it to our Main Menu
-			if(GameData.EXIT_GAME_SCREEN != gameManager.getData().getOptionsScreen()) {
+			if(GameData.EXIT_GAME_SCREEN != gameManager.data.getOptionsScreen()) {
 				optionsButton = new TextButton("Options", buttonStyle);
 				optionsButton.addListener(buttonListener);
 				table.right().add(optionsButton).expandY().fill();
@@ -166,14 +168,14 @@ public class MainMenuScreen extends AbstractScreen {
 		public void changed(ChangeEvent event, Actor actor) {
 			if(actor.equals(playButton)) {
 				Gdx.app.log("MainMenuScreen:ButtonListener", "Play/Resume Game");
-				if(gameManager.getData().isNewGame()) {
-					gameManager.getData().newGame();
+				if(gameManager.data.isNewGame()) {
+					gameManager.data.newGame();
 				} else {
-					gameManager.getData().resumeGame();
+					gameManager.data.resumeGame();
 				}
 			} else if(actor.equals(optionsButton)) {
 				Gdx.app.log("MainMenuScreen:ButtonListener", "Options");
-				gameManager.setScreen(gameManager.getData().getOptionsScreen());
+				gameManager.setScreen(gameManager.data.getOptionsScreen());
 			} else if(actor.equals(exitButton)) {
 				Gdx.app.log("MainMenuScreen:ButtonListener", "Exit Game");
 				gameManager.setScreen(GameData.EXIT_GAME_SCREEN);

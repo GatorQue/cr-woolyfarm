@@ -10,8 +10,11 @@ import com.badlogic.gdx.scenes.scene2d.Actor;
 import com.badlogic.gdx.scenes.scene2d.Stage;
 import com.badlogic.gdx.scenes.scene2d.ui.Image;
 import com.cosmicrover.core.GameManager;
+import com.cosmicrover.core.assets.GameData;
+import com.cosmicrover.core.assets.GroupData;
+import com.cosmicrover.core.assets.LevelData;
 
-public class AssetLoadingScreen extends LoadingScreen {
+public class AssetLoadingScreen<L extends LevelData, G extends GroupData<L>> extends LoadingScreen<L,G> {
 
 	/// Default Lag delay for this Loading screen
 	private static final float DEFAULT_LAG_DELAY_S = 0.0f;
@@ -34,12 +37,12 @@ public class AssetLoadingScreen extends LoadingScreen {
     // The startX position and endX position for scaling the loading bar
     private float startX, endX;
 
-    public AssetLoadingScreen(GameManager gameManager) {
+    public AssetLoadingScreen(GameManager<L,G> gameManager) {
 		this(gameManager, DEFAULT_LAG_DELAY_S);
 	}
 
-	public AssetLoadingScreen(GameManager gameManager, float lagDelay_s) {
-		super("AssetLoadingScreen", gameManager, lagDelay_s);
+	public AssetLoadingScreen(GameManager<L,G> gameManager, float lagDelay_s) {
+		super("AssetLoadingScreen", GameData.ASSET_LOADING_SCREEN, gameManager, lagDelay_s);
 
 		// Load the assets we need for displaying the loading screen immediately
 		gameManager.getAssetManager().load("textures/loading.pack", TextureAtlas.class);

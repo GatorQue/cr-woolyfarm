@@ -3,13 +3,16 @@ package com.cosmicrover.woolyfarm;
 import com.badlogic.gdx.Game;
 import com.cosmicrover.core.GameEnvironment;
 import com.cosmicrover.core.GameManager;
+import com.cosmicrover.woolyfarm.assets.WoolyGameData;
+import com.cosmicrover.woolyfarm.assets.WoolyGroupData;
+import com.cosmicrover.woolyfarm.assets.WoolyLevelData;
 
 public class WoolyFarmGame extends Game {
 	/// Our persistence service class
-	private final GameManager gameManager;
+	private final GameManager<WoolyLevelData, WoolyGroupData> gameManager;
 	
 	public WoolyFarmGame(GameEnvironment gameEnvironment) {
-		this.gameManager = new GameManager(this, gameEnvironment, "wollyfarm.dat");
+		this.gameManager = new GameManager<WoolyLevelData, WoolyGroupData>(this, gameEnvironment);
 	}
 	
 	@Override
@@ -20,10 +23,10 @@ public class WoolyFarmGame extends Game {
 		// gameManager.getEnvironment().setJoysticks(joystickCount);
 
 		// Step 2: Initialize the game data
-		gameManager.initData(new PlayerData());
+		gameManager.initData(new WoolyGameData("wollyfarm.dat"));
 		
 		// Step 3: Set our first screen object and return to caller
-		setScreen(gameManager.getData().getInitialScreen());
+		setScreen(gameManager.data.getInitialScreen());
 	}
 
 	@Override

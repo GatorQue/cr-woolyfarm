@@ -18,15 +18,16 @@ import com.badlogic.gdx.scenes.scene2d.ui.Table;
 import com.badlogic.gdx.scenes.scene2d.utils.ChangeListener;
 import com.badlogic.gdx.scenes.scene2d.utils.TextureRegionDrawable;
 import com.cosmicrover.core.GameManager;
-import com.cosmicrover.core.screens.LoadingScreen;
+import com.cosmicrover.core.assets.GameData;
+import com.cosmicrover.core.assets.GroupData;
+import com.cosmicrover.core.assets.loaders.JsonDataLoader;
 import com.cosmicrover.core.screens.AbstractScreen;
+import com.cosmicrover.core.screens.LoadingScreen;
 import com.cosmicrover.core.ui.utils.AnimationDrawable;
-import com.cosmicrover.woolyfarm.LevelData;
-import com.cosmicrover.woolyfarm.LevelDataLoader;
-import com.cosmicrover.woolyfarm.PlayerData;
-import com.cosmicrover.woolyfarm.LevelData.Sprites;
+import com.cosmicrover.woolyfarm.assets.WoolyLevelData;
+import com.cosmicrover.woolyfarm.assets.WoolyLevelData.Sprites;
 
-public abstract class LevelScreen extends AbstractScreen {
+public abstract class LevelScreen<G extends GroupData<WoolyLevelData>> extends AbstractScreen<WoolyLevelData,G> {
 	/// Scene2d used by this Screen
 	protected Stage stage = null;
 	protected Table stageTable = null;
@@ -35,11 +36,10 @@ public abstract class LevelScreen extends AbstractScreen {
 	private Table horizontalEdges = null;
 	private Table verticalEdgesAndSquares = null;
 	private Music music = null;
-	private ScrollPane levelScrollPane = null;
 	protected Button restartButton = null;
 	protected Button backButton = null;
 	protected ButtonListener buttonListener = null;
-	protected LevelData levelData = null;
+	protected WoolyLevelData levelData = null;
 
 	protected enum MapEdge {
 		Horizontal,
@@ -52,8 +52,8 @@ public abstract class LevelScreen extends AbstractScreen {
 	/// TextureAtlas that can carve up the sprite texture to show the correct texture
 	private TextureAtlas spriteTextureAtlas;
 	
-	public LevelScreen(String screenName, GameManager gameManager, int screenId) {
-		super(screenName, gameManager, screenId);
+	public LevelScreen(String screenName, int screenId, GameManager<WoolyLevelData,G> gameManager, int backScreenId) {
+		super(screenName, screenId, gameManager, backScreenId);
 	}
 
 	@Override
@@ -75,29 +75,67 @@ public abstract class LevelScreen extends AbstractScreen {
 		// Call our base class implementation (sets our Back button screen)
 		super.show();
 
-		// Retrieve the level data for this game
-		levelData = gameManager.getData(PlayerData.class).getCurrentLevel();
+		// Retrieve the level data and see if its loaded yet
+		levelData = gameManager.data.getCurrentLevel();
 
+		// Level never been created? then switch to LevelEditorScreen
+		if(levelData == null) {
+			// Not level editor? then create a new level and switch to level editor
+			if(GameData.LEVEL_EDITOR_SCREEN != screenId) {
+				// Retrieve the GroupData for the current group
+				G groupData = gameManager.data.getCurrentGroup();
+				
+				// Get the next levelId value from the current group
+				int levelId = groupData.levels.getSize();
+				
+				// Create a new level for our editor
+				WoolyLevelData levelData = groupData.createLevel(levelId);
+
+				// Create an empty level to edit
+				levelData.createEmpty();
+
+				// Set our level data flags
+				levelData.locked = false;
+				levelData.completed = false;
+				levelData.loaded = true;
+				
+				// Create an empty level to edit
+				groupData.levels.registerLevel(levelData);
+	
+				// Register this level as the current level
+				gameManager.data.setCurrentLevel(levelData.getFilename());
+	
+				// Switch to level editor screen to create a new level for this group
+				gameManager.setScreen(GameData.LEVEL_EDITOR_SCREEN);
+			}
+			// Level data was not created, switch back to previous screen
+			else {
+				Gdx.app.log("LevelScreen:show()", "screenId="+screenId+",null LevelData");
+				gameManager.setScreen(getBackScreenId());
+			}
+		}
 		// Check to see if our level data has been loaded yet
-		if(!levelData.loaded) {
+		else if(!levelData.loaded) {
 			// Add this level file to our assetMaanger to load next
-	    	gameManager.getAssetManager().load(
-	    			LevelData.LEVEL_DIRECTORY+LevelData.LEVEL_NAME+levelData.id+LevelData.LEVEL_EXT,
-	    			LevelData.class,
-	    			new LevelDataLoader.Parameters(levelData));
+			gameManager.getAssetManager().load(levelData.getFilename(), WoolyLevelData.class,
+	    			new JsonDataLoader.Parameters<WoolyLevelData>(levelData));
 	    	
 	    	// Tell the AssetLoadingScreen to switch back to us when its done
-	    	LoadingScreen.setNextScreenId(PlayerData.LEVEL_PLAY_SCREEN);
+	    	LoadingScreen.setNextScreenId(GameData.LEVEL_PLAY_SCREEN);
 	    	
 	    	// Switch to the AssetLoadingScreen
-	    	gameManager.setScreen(PlayerData.ASSET_LOADING_SCREEN);
+	    	gameManager.setScreen(GameData.ASSET_LOADING_SCREEN);
 		}
 		else {
-			// Retrieve and start our music
-			music = Gdx.audio.newMusic(Gdx.files.internal("music/level_play.mp3"));
-			music.setLooping(true);
-			music.setVolume(0.5f);
-			music.play();
+			// Create music object and start playing it now
+			music = createMusic();
+			if(music != null) {
+				// Set looping flag to true and music volume
+				music.setLooping(true);
+				music.setVolume(0.5f);
+				// Start playing the music track now
+				music.play();
+			}
 			
 			if(isFirstTime()) {
 				// Create a hash map for looking up texture regions by string name found in SpriteComponent
@@ -127,17 +165,18 @@ public abstract class LevelScreen extends AbstractScreen {
 
 	@Override
 	public void hide() {
-		// Stop our music from playing and dispose it
-		if(music != null) {
-			music.stop();
-			music.dispose();
-			music = null;
+		// First time flag has been cleared? then clean up
+		if(!isFirstTime()) {
+			// Stop our music from playing and dispose it
+			if(music != null) {
+				music.stop();
+				music.dispose();
+				music = null;
+			}
+			
+			// Remove our Scene2d as an input processor
+			gameManager.getInputMultiplexer().removeProcessor(stage);
 		}
-		
-		// TODO: Disable or remove entities created by show method above.
-
-		// Remove our Scene2d as an input processor
-		gameManager.getInputMultiplexer().removeProcessor(stage);
 	}
 
 	@Override
@@ -153,6 +192,10 @@ public abstract class LevelScreen extends AbstractScreen {
 		
 		// Give stage a chance to dispose itself
 		stage.dispose();
+	}
+
+	protected Music createMusic() {
+		return null;
 	}
 
 	protected void createStage() {
@@ -202,7 +245,7 @@ public abstract class LevelScreen extends AbstractScreen {
 		scrollStack.add(actionTable);
 		
 		// Create a scroll pane for the list of level buttons
-		levelScrollPane = new ScrollPane(scrollStack);
+		ScrollPane levelScrollPane = new ScrollPane(scrollStack);
 		stageTable.add(levelScrollPane).colspan(7).expand().fill();
 		stageTable.row();
 	}
@@ -277,7 +320,7 @@ public abstract class LevelScreen extends AbstractScreen {
 					anGroundImage = new Image(rock2);
 					break;
 				default:
-					Gdx.app.error("LevelPlayScreen:updateLevelMap", "Unknown background type");
+					Gdx.app.error("LevelScreen:updateLevelMap", "Unknown background type");
 				case GroundWater1:
 					anGroundImage = new Image(water1);
 					break;
@@ -311,7 +354,7 @@ public abstract class LevelScreen extends AbstractScreen {
 				actionTable.add(new Image(fencePost));
 				Button anButtonHorizontal = new Button(horizontalSpacer);
 				anButtonHorizontal.addListener(buttonListener);
-				anButtonHorizontal.setName("he"+((row*levelData.fenceCols) + col));
+				anButtonHorizontal.setName("he"+((row*(levelData.mapCols+1)) + col));
 				actionTable.add(anButtonHorizontal);
 
 				if(col == 0) {
@@ -333,7 +376,7 @@ public abstract class LevelScreen extends AbstractScreen {
 					anFenceHorizontal = new Image(fenceEmptyHorizontal);
 					break;
 				}
-				anFenceHorizontal.setName("he"+((row*levelData.fenceCols) + col));
+				anFenceHorizontal.setName("he"+((row*(levelData.mapCols+1)) + col));
 				horizontalEdges.add(anFenceHorizontal);
 			}
 			// Add final fence post to the animal table
@@ -350,13 +393,13 @@ public abstract class LevelScreen extends AbstractScreen {
 					// Add vertical edge button to action table
 					Button anButtonVertical = new Button(verticalSpacer);
 					anButtonVertical.addListener(buttonListener);
-					anButtonVertical.setName("ve"+((row*levelData.fenceCols) + col));
+					anButtonVertical.setName("ve"+((row*(levelData.mapCols+1)) + col));
 					actionTable.add(anButtonVertical);
 
 					// Add map square button to action table
 					Button anButtonSquare = new Button(horizontalSpacer);
 					anButtonSquare.addListener(buttonListener);
-					anButtonSquare.setName("ms"+((row*levelData.fenceCols) + col));
+					anButtonSquare.setName("ms"+((row*(levelData.mapCols+1)) + col));
 					actionTable.add(anButtonSquare);
 
 					// Add vertical fence
@@ -374,7 +417,7 @@ public abstract class LevelScreen extends AbstractScreen {
 						anFenceVertical = new Image(fenceEmptyVertical);
 						break;
 					}
-					anFenceVertical.setName("ve"+((row*levelData.fenceCols) + col));
+					anFenceVertical.setName("ve"+((row*(levelData.mapCols+1)) + col));
 					verticalEdgesAndSquares.add(anFenceVertical);
 					
 					// Create animations for each animal type
@@ -417,13 +460,13 @@ public abstract class LevelScreen extends AbstractScreen {
 						anMapSquare = new Image(animalNone);
 						break;
 					}
-					anMapSquare.setName("ms"+((row*levelData.fenceCols) + col));
+					anMapSquare.setName("ms"+((row*(levelData.mapCols+1)) + col));
 					verticalEdgesAndSquares.add(anMapSquare);
 				}
 				// Add final vertical spacer on animal table
 				Button anButtonVertical = new Button(verticalSpacer);
 				anButtonVertical.addListener(buttonListener);
-				anButtonVertical.setName("ve"+((row*levelData.fenceCols) + levelData.mapCols));
+				anButtonVertical.setName("ve"+((row*(levelData.mapCols+1)) + levelData.mapCols));
 				actionTable.add(anButtonVertical);
 				actionTable.row();
 				// Add final vertical spacer to horizontal fence table
@@ -446,7 +489,7 @@ public abstract class LevelScreen extends AbstractScreen {
 					anFenceVertical = new Image(fenceEmptyVertical);
 					break;
 				}
-				anFenceVertical.setName("ve"+((row*levelData.fenceCols) + levelData.mapCols));
+				anFenceVertical.setName("ve"+((row*(levelData.mapCols+1)) + levelData.mapCols));
 				verticalEdgesAndSquares.add(anFenceVertical);
 				verticalEdgesAndSquares.row();
 			}
@@ -469,10 +512,10 @@ public abstract class LevelScreen extends AbstractScreen {
 		@Override
 		public void changed(ChangeEvent event, Actor actor) {
 			if(actor.equals(restartButton)) {
-				Gdx.app.log("LevelPlayScreen:ButtonListener", "Restart Level");
+				Gdx.app.log("LevelScreen:ButtonListener", "Restart");
 				onResetClick();
 			} else if(actor.equals(backButton)) {
-				Gdx.app.log("LevelPlayScreen:ButtonListener", "Back");
+				Gdx.app.log("LevelScreen:ButtonListener", "Back");
 				gameManager.setScreen(getBackScreenId());
 			} else if(actor.getName() != null) {
 				// Is this an map square being clicked?
@@ -482,8 +525,8 @@ public abstract class LevelScreen extends AbstractScreen {
 					if(anButton != null) {
 						// Toggle the fence at the location specified in the name (minus the ac characters)
 						int location = Integer.parseInt(anButton.getName().substring(2));
-						int row = location / (levelData.fenceCols);
-						int col = location % (levelData.fenceCols);
+						int row = location / (levelData.mapCols+1);
+						int col = location % (levelData.mapCols+1);
 						onMapSquareClick(row, col);
 					}
 				}
@@ -494,8 +537,8 @@ public abstract class LevelScreen extends AbstractScreen {
 					if(anButton != null) {
 						// Toggle the fence at the location specified in the name (minus the vf characters)
 						int location = Integer.parseInt(anButton.getName().substring(2));
-						int row = location / (levelData.fenceCols);
-						int col = location % (levelData.fenceCols);
+						int row = location / (levelData.mapCols+1);
+						int col = location % (levelData.mapCols+1);
 						onMapEdgeClick(row, col, MapEdge.Vertical);
 					}
 				}
@@ -506,8 +549,8 @@ public abstract class LevelScreen extends AbstractScreen {
 					if(anButton != null) {
 						// Toggle the fence at the location specified in the name (minus the hf characters)
 						int location = Integer.parseInt(anButton.getName().substring(2));
-						int row = location / (levelData.fenceCols);
-						int col = location % (levelData.fenceCols);
+						int row = location / (levelData.mapCols+1);
+						int col = location % (levelData.mapCols+1);
 						onMapEdgeClick(row, col, MapEdge.Horizontal);
 					}
 				}

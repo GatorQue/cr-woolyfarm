@@ -1,31 +1,36 @@
 package com.cosmicrover.core.screens;
 
 import com.badlogic.gdx.Screen;
-import com.cosmicrover.core.GameData;
 import com.cosmicrover.core.GameManager;
+import com.cosmicrover.core.assets.GameData;
+import com.cosmicrover.core.assets.GroupData;
+import com.cosmicrover.core.assets.LevelData;
 
-public class AbstractScreen implements Screen {
+public class AbstractScreen<L extends LevelData, G extends GroupData<L>> implements Screen {
 	/// Name of this screen
 	protected final String screenName;
 	
+	/// Which screen ID are we (default is exit game)?
+	protected final int screenId;
+
 	/// Our GameDataService object to make game changes with
-	protected final GameManager gameManager;
-	
-	/// Indicates this screen has never been shown yet.
-	private boolean firstTime = true; 
+	protected final GameManager<L,G> gameManager;
 	
 	/// Which screen to switch to on Back button (default is to exit game)
 	private int backScreenId = GameData.EXIT_GAME_SCREEN;
 	
-	public AbstractScreen(String screenName, GameManager gameManager) {
-		this(screenName, gameManager, GameData.EXIT_GAME_SCREEN);
+	/// Indicates this screen has never been shown yet.
+	private boolean firstTime = true; 
+	
+	public AbstractScreen(String screenName, int screenId, GameManager<L,G> gameManager) {
+		this(screenName, screenId, gameManager, GameData.EXIT_GAME_SCREEN);
 	}
 
-	public AbstractScreen(String screenName, GameManager gameManager, int screenId) {
+	public AbstractScreen(String screenName, int screenId, GameManager<L,G> gameManager, int backScreenId) {
 		this.screenName = screenName;
+		this.screenId = screenId;
 		this.gameManager = gameManager;
-		firstTime = true;
-		setBackScreenId(screenId);
+		setBackScreenId(backScreenId);
 	}
 	
 	public String getName() {

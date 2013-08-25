@@ -1,4 +1,4 @@
-package com.cosmicrover.woolyfarm.screens;
+package com.cosmicrover.core.screens;
 
 import java.util.HashMap;
 
@@ -22,14 +22,16 @@ import com.badlogic.gdx.scenes.scene2d.ui.Label.LabelStyle;
 import com.badlogic.gdx.scenes.scene2d.ui.TextButton.TextButtonStyle;
 import com.badlogic.gdx.scenes.scene2d.utils.ChangeListener;
 import com.badlogic.gdx.scenes.scene2d.utils.TextureRegionDrawable;
-import com.badlogic.gdx.utils.ArrayMap;
+import com.badlogic.gdx.utils.ArrayMap.Keys;
 import com.cosmicrover.core.GameManager;
 import com.cosmicrover.core.GameEnvironment.Platform;
-import com.cosmicrover.core.screens.AbstractScreen;
-import com.cosmicrover.woolyfarm.LevelData;
-import com.cosmicrover.woolyfarm.PlayerData;
+import com.cosmicrover.core.LevelManager;
+import com.cosmicrover.core.assets.GameData;
+import com.cosmicrover.core.assets.GroupData;
+import com.cosmicrover.core.assets.LevelData;
+import com.cosmicrover.woolyfarm.assets.WoolyGameData;
 
-public class LevelSelectScreen extends AbstractScreen {
+public class LevelSelectScreen<L extends LevelData, G extends GroupData<L>> extends AbstractScreen<L,G> {
 	/// Scene2d used by this Screen
 	private Stage stage = null;
 	private Image background = null;
@@ -40,6 +42,7 @@ public class LevelSelectScreen extends AbstractScreen {
 	private TextButton backButton = null;
 	private BitmapFont buttonFont = null;
 	private ButtonListener buttonListener = null;
+	private G groupData = null;
 
 	/// Maps region name to AtlasRegion information to texture
 	private HashMap<String, AtlasRegion> levelRegions;
@@ -47,8 +50,8 @@ public class LevelSelectScreen extends AbstractScreen {
 	/// TextureAtlas that can carve up the sprite texture to show the correct texture
 	private TextureAtlas levelTextureAtlas;
 
-	public LevelSelectScreen(GameManager gameManager, int screenId) {
-		super("LevelSelectScreen", gameManager, screenId);
+	public LevelSelectScreen(GameManager<L,G> gameManager, int backScreenId) {
+		super("LevelSelectScreen", GameData.LEVEL_SELECT_SCREEN, gameManager, backScreenId);
 	}
 
 	@Override
@@ -69,7 +72,23 @@ public class LevelSelectScreen extends AbstractScreen {
 	public void show() {
 		// Call our base class implementation (sets our Back button screen)
 		super.show();
+
+		// Retrieve the groupName and GroupData object for the current group
+		groupData = gameManager.data.getCurrentGroup();
+
+		// GroupData doesn't yet exist? then create and register it now
+		if(groupData == null) {
+			// Assign groupId using current size of groups registered
+			int groupId = gameManager.data.groups.getSize();
+			
+			// Create new GroupData object
+			groupData = gameManager.data.createGroup(groupId);
+
+			// Register new GroupData object with gameManager
+			gameManager.data.groups.registerGroup(groupData);
+		}
 		
+		// First time? then create our stage object and other UI elements
 		if(isFirstTime()) {
 			// Create a hash map for looking up texture regions by string name found in SpriteComponent
 			levelRegions = new HashMap<String, AtlasRegion>();
@@ -97,10 +116,14 @@ public class LevelSelectScreen extends AbstractScreen {
 
 	@Override
 	public void hide() {
-		// TODO: Disable or remove entities created by show method above.
-
-		// Remove our Scene2d as an input processor
-		gameManager.getInputMultiplexer().removeProcessor(stage);
+		// First time flag has been cleared? then clean up
+		if(!isFirstTime()) {
+			// Clear our table of level buttons
+			levelTable.clear();
+			
+			// Remove our Scene2d as an input processor
+			gameManager.getInputMultiplexer().removeProcessor(stage);
+		}
 	}
 
 	@Override
@@ -187,9 +210,6 @@ public class LevelSelectScreen extends AbstractScreen {
 		int maxColumn = Gdx.graphics.getWidth() / (64 + 20); // TODO: Replace with Texture.getWidth + padding;
 		System.out.println("maxColumn="+maxColumn);
 
-		// Retrieve our PlayerData class to obtain textures
-		PlayerData playerData = gameManager.getData(PlayerData.class);
-		
 		// Create our button style
 		TextButtonStyle unlockedButtonStyle = new TextButtonStyle();
 		unlockedButtonStyle.font = buttonFont;
@@ -209,24 +229,32 @@ public class LevelSelectScreen extends AbstractScreen {
 		completedButtonStyle.down = new TextureRegionDrawable(levelRegions.get("level_completed_down"));
 		completedButtonStyle.over = new TextureRegionDrawable(levelRegions.get("level_completed_over"));
 
+		TextButtonStyle createButtonStyle = new TextButtonStyle();
+		createButtonStyle.font = buttonFont;
+		createButtonStyle.fontColor = Color.BLACK;
+		createButtonStyle.overFontColor = Color.BLUE;
+		createButtonStyle.disabled = new TextureRegionDrawable(levelRegions.get("level_locked"));
+		createButtonStyle.up = new TextureRegionDrawable(levelRegions.get("level_create_up"));
+		createButtonStyle.down = new TextureRegionDrawable(levelRegions.get("level_create_down"));
+		createButtonStyle.over = new TextureRegionDrawable(levelRegions.get("level_create_over"));
+		
 		// Clear our table of level buttons
 		levelTable.clear();
-		
-		// Loop through each level and create a new button
-		ArrayMap<String, LevelData> levels = playerData.getLevels();
-		for(int i=0, iSize = levels.size; iSize > i; i++) {
-			// Retrieve the level data information
-			LevelData anLevel = levels.getValueAt(i);
+
+		// Retrieve a list of levels available
+		Keys<String> levels = groupData.levels.getLevels();
+		for(String levelName : levels) {
+			LevelData levelData = groupData.levels.getLevel(levelName);
 
 			// Create a button to represent this level
 			TextButton anButton;
-			if(anLevel.completed) {
-				anButton = new TextButton(""+anLevel.id, completedButtonStyle);
+			if(levelData.completed) {
+				anButton = new TextButton(""+levelData.levelId, completedButtonStyle);
 			} else {
-				anButton = new TextButton(""+anLevel.id, unlockedButtonStyle);
+				anButton = new TextButton(""+levelData.levelId, unlockedButtonStyle);
 			}
-			anButton.setName(anLevel.getTag());
-			anButton.setDisabled(anLevel.locked);
+			anButton.setName(levelData.getFilename());
+			anButton.setDisabled(levelData.locked);
 			anButton.addListener(buttonListener);
 			anButton.pad(10.0f);
 
@@ -238,6 +266,22 @@ public class LevelSelectScreen extends AbstractScreen {
 				column = 0;
 				levelTable.row();
 			}
+		}
+		
+		// Add our create new level button
+		TextButton anButton = new TextButton("*"+groupData.levels.getSize(), createButtonStyle);
+		anButton.setName(LevelManager.getFilename(groupData.groupId, groupData.levels.getSize()));
+		anButton.setDisabled(false); // TODO: Replace false with lookup to see if level editor is enabled
+		anButton.addListener(buttonListener);
+		anButton.pad(10.0f);
+
+		// Now add the level button to the list to be displayed
+		levelTable.add(anButton).center().expand();
+		
+		// Increment our column count and check against maximum
+		if(++column >= maxColumn) {
+			column = 0;
+			levelTable.row();
 		}
 
 		// Enable debug lines
@@ -258,8 +302,8 @@ public class LevelSelectScreen extends AbstractScreen {
 				Actor anButton = levelTable.findActor(actor.getName());
 				if(anButton != null) {
 					Gdx.app.log("LevelSelectScreen:ButtonListener", anButton.getName());
-					gameManager.getData(PlayerData.class).setCurrentLevel(anButton.getName());
-					gameManager.setScreen(PlayerData.LEVEL_PLAY_SCREEN);
+					gameManager.data.setCurrentLevel(anButton.getName());
+					gameManager.setScreen(WoolyGameData.LEVEL_PLAY_SCREEN);
 				}
 			}
 		}

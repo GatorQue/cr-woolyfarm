@@ -6,18 +6,20 @@ import com.badlogic.gdx.Input;
 import com.badlogic.gdx.InputMultiplexer;
 import com.badlogic.gdx.InputProcessor;
 import com.badlogic.gdx.assets.AssetManager;
-import com.badlogic.gdx.files.FileHandle;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.graphics.glutils.ShapeRenderer;
 import com.badlogic.gdx.maps.tiled.TiledMap;
 import com.badlogic.gdx.maps.tiled.renderers.OrthogonalTiledMapRenderer;
 import com.badlogic.gdx.utils.Disposable;
 import com.cosmicrover.core.GameEnvironment.Platform;
+import com.cosmicrover.core.assets.GameData;
+import com.cosmicrover.core.assets.GroupData;
+import com.cosmicrover.core.assets.LevelData;
+import com.cosmicrover.core.assets.loaders.JsonDataLoader;
 import com.cosmicrover.core.screens.AbstractScreen;
 
-public class GameManager implements Disposable {
-	public static final String DATA_DIRECTORY = ".cosmicrover/";
-	
+public class GameManager<L extends LevelData, G extends GroupData<L>> implements Disposable {
+    public GameData<L,G> data = null;
     private final AssetManager assetManager;
 	private final Game game;
     private final GameEnvironment gameEnvironment;
@@ -25,9 +27,7 @@ public class GameManager implements Disposable {
 	private SpriteBatch spriteBatch = null;
 	private ShapeRenderer shapeRenderer = null;
 	private OrthogonalTiledMapRenderer mapRenderer = null;
-    private GameData gameData = null;
 	private BackButtonHandler backButtonHandler = null;
-    private String dataFilename;
     
     /**
      * Creates the GameManager class that is responsible for providing
@@ -36,18 +36,10 @@ public class GameManager implements Disposable {
      * @param[in] the GameEnvironment class used to provide environment information
      */
     public GameManager(Game game, GameEnvironment gameEnvironment) {
-    	this(game, gameEnvironment, "default.dat");
-    }
-    
-    /**
-     * Creates the persistence service.
-     */
-    public GameManager(Game game, GameEnvironment gameEnvironment, String gameFilename) {
     	this.assetManager = new AssetManager();
     	this.game = game;
     	this.gameEnvironment = gameEnvironment;
     	this.inputMultiplexer = new InputMultiplexer();
-    	setDataFilename(gameFilename);
     }
     
     /**
@@ -116,7 +108,7 @@ public class GameManager implements Disposable {
     		Gdx.app.exit();
     	} else {
     		// Retrieve our AbstractScreen base class for the screenId provided
-    		AbstractScreen anScreen = gameData.getScreen(screenId);
+    		AbstractScreen<L,G> anScreen = data.getScreen(screenId);
     		game.setScreen(anScreen);
 
     		// Log the change of screens event
@@ -149,123 +141,50 @@ public class GameManager implements Disposable {
     }
 
     /**
-     * This method is responsible for setting theFilename specified as the
-     * filename to save the game data information into.
-     * @param theFilename to use for saving data
-     */
-    public final void setDataFilename(String theFilename) {
-    	this.dataFilename = theFilename;
-    }
-    
-    /**
-     * This method will delete the existing game data file. This is typically
-     * called when the game or level has ended and you don't want the
-     * application to restore the game back to the last saved point before the
-     * game ended.
-     */
-    public final void deleteData() {
-    	FileHandle gameDataFile = Gdx.files.external(dataFilename);
-    	if(gameDataFile.exists()) {
-        	Gdx.app.log( "GameManager:deleteData()",
-        			"Deleting data file '" + dataFilename + "'" );
-
-        	// Delete the game data file
-    		gameDataFile.delete();
-
-    		// Set our new game flag on our game data and call the resetGame method
-    		gameData.setNewGame(true);
-    		
-    		// Indicate that we need to create a new game
-    		gameData.resetGame();
-    	}
-    }
-
-    /**
-     * This method is responsible for returning the GameData version of the
-     * derived class registered earlier.
-     * @return GameData derived class loaded from a file or newly created.
-     */
-    public final GameData getData() {
-    	return getData(GameData.class);
-    }
-
-    /**
-     * This method is responsible for returning the GameData derived class that
-     * is either read from the file or created using the createGameData method
-     * above.
-     * @return GameData derived class, type, loaded from a file or newly created.
-     */
-	public final <T extends GameData> T getData(Class<T> type) {
-        // Return the gameData previously restored or the gameData created above
-		return type.cast(gameData);
-    }
-    
-    /**
      * This method is responsible for creating the GameData derived class type
      * specified and calling its initGame() method.
      * 
      * @param[in] type of GameData derived class to create
      */
-    @SuppressWarnings({ "unchecked", "rawtypes" })
-	public final void initData(GameData gameData) {
-    	if( this.gameData != null ) {
+	@SuppressWarnings("rawtypes")
+	public final void initData(GameData<L,G> data) {
+    	if( this.data != null ) {
     		Gdx.app.error("GameManager:init", "GameData object already exists, replacing.");
     	}
     	// Update our GameData object
-    	this.gameData = gameData;
+    	this.data = data;
 
 		// Do we need a back button handler?
     	if(Platform.Android == gameEnvironment.getPlatform() ||
     	   Platform.iOS == gameEnvironment.getPlatform()) {
-    		// Create our Back button handler
-    		backButtonHandler = new BackButtonHandler(this);
-    		
     		// Register our handler with our InputMultiplexer
-    		inputMultiplexer.addProcessor(backButtonHandler);
+    		inputMultiplexer.addProcessor(new BackButtonHandler());
 
     		// Make sure we catch the Back key (Android/iOS) input events
     		Gdx.app.getInput().setCatchBackKey(true);
     	}
             	
 		// Call the init method on this new instance
-		gameData.init(this);
+		data.init(this);
     			
 		// Add ourselves as a handler for the GameData class
-		assetManager.setLoader(GameData.class, new GameDataLoader<GameData>());
+		assetManager.setLoader(GameData.class, new JsonDataLoader<GameData>());
 
 		// Add the data to our assetMaanger to load next
-    	assetManager.load(DATA_DIRECTORY+dataFilename, GameData.class,
-    			new GameDataLoader.Parameters(gameData));
+    	assetManager.load(data.getFilename(), GameData.class,
+    			new JsonDataLoader.Parameters<GameData>(data));
 
         // Make our inputMultiplexer the primary input listener
 	    Gdx.input.setInputProcessor(this.inputMultiplexer);
     }
  
     /**
-     * Determines if the background thread has finished loading the game data
-     * from a file.
-     * @return true if the background thread has completed, false otherwise
-     */
-    public final boolean isDataLoaded() {
-    	return assetManager.isLoaded(DATA_DIRECTORY + dataFilename);
-    }
- 
-    /**
-     * This method is responsible for saving the game data previously
-     * created or restored above.
-     */
-    public final void saveData() {
-    	// Call our overloaded method with the current default filename
-    	saveData(DATA_DIRECTORY + dataFilename);
-    }
-
-    /**
      * This method is responsible for saving the game data previously created
      * or restored above.
      * @param filename and path to where the data will be saved.
      */
-    public final void saveData(String filename) {
-    	GameDataLoader.save(gameData, filename);
+    public final void saveData() {
+    	JsonDataLoader.save(data);
     }
 
 	@Override
@@ -280,24 +199,17 @@ public class GameManager implements Disposable {
 	    if(mapRenderer != null) {
 			mapRenderer.dispose();
 	    }
-	    if(gameData != null) {
-	    	gameData = null;
+	    if(data != null) {
+	    	data = null;
 	    }
 	};
 
 	protected final class BackButtonHandler implements InputProcessor {
-    	/// The parent class responsible for handling changing of screens
-    	private final GameManager gameManager;
-    	
     	/// The screenId to use when back button is pressed (defaults to exit game)
     	private int screenId = GameData.EXIT_GAME_SCREEN;
     	
     	/// Is the back button response currently enabled?
     	private boolean enabled = true;
-    	
-    	public BackButtonHandler(GameManager gameManager) {
-    		this.gameManager = gameManager;
-    	}
     	
     	/**
     	 * Set the screenId to switch to when the back button is pressed (use
@@ -331,7 +243,7 @@ public class GameManager implements Disposable {
 
 			if(keycode == Input.Keys.BACK && enabled) {
 				// Set our screen to the backScreenId set earlier
-				gameManager.setScreen(screenId);
+				setScreen(screenId);
 				
 				// Set our consumed flag to true
 				consumed = true;
