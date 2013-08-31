@@ -7,7 +7,7 @@ import com.cosmicrover.core.assets.LevelData;
 
 public class LevelManager<L extends LevelData> {
 	/// Maximum number of levels supported per group
-	public static final int MAX_LEVELS = 100;
+	public static final int MAX_LEVELS = 1000;
 	
 	/// Directory where each levle can be found
 	public static final String LEVEL_DIRECTORY = "/";

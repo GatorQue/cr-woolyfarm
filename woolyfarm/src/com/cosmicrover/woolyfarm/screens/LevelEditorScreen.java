@@ -22,9 +22,9 @@ import com.cosmicrover.core.GameManager;
 import com.cosmicrover.core.GameEnvironment.Platform;
 import com.cosmicrover.core.assets.GameData;
 import com.cosmicrover.core.assets.loaders.JsonDataLoader;
+import com.cosmicrover.woolyfarm.assets.MapData.Sprites;
 import com.cosmicrover.woolyfarm.assets.WoolyGroupData;
 import com.cosmicrover.woolyfarm.assets.WoolyLevelData;
-import com.cosmicrover.woolyfarm.assets.WoolyLevelData.Sprites;
 
 public class LevelEditorScreen extends LevelScreen<WoolyGroupData> {
 	protected Label fencesLabel = null;
@@ -83,12 +83,12 @@ public class LevelEditorScreen extends LevelScreen<WoolyGroupData> {
 
 		// Add fences icon and number of fences remaining label
 		leftTable.add(new Image(fencesIcon));
-		fencesLabel = new Label(""+levelData.numFences, labelStyle);
+		fencesLabel = new Label(""+levelData.current.numFences, labelStyle);
 		leftTable.add(fencesLabel).width(32.0f).spaceRight(5.0f);
 		
 		// Add dogs icon and number of dogs remaining label
 		leftTable.add(new Image(dogsIcon));
-		dogsLabel = new Label(""+levelData.numDogs, labelStyle);
+		dogsLabel = new Label(""+levelData.current.numDogs, labelStyle);
 		leftTable.add(dogsLabel).width(32.0f);
 		stageTable.add(leftTable).left().expandX();
 		
@@ -134,29 +134,29 @@ public class LevelEditorScreen extends LevelScreen<WoolyGroupData> {
 
 	@Override
 	protected void onMapSquareClick(int row, int col) {
-		switch(levelData.mapAnimals[row][col]) {
+		switch(levelData.current.animals[row][col]) {
 		default:
 			Gdx.app.error("toggleAnimal", "Unknown animal type");
 		case AnimalNone:
-			levelData.mapAnimals[row][col] = Sprites.AnimalSheep;
+			levelData.current.animals[row][col] = Sprites.AnimalSheep;
 			break;
 		case AnimalSheep:
-			levelData.mapAnimals[row][col] = Sprites.AnimalWolf;
+			levelData.current.animals[row][col] = Sprites.AnimalWolf;
 			break;
 		case AnimalWolf:
-			levelData.mapAnimals[row][col] = Sprites.AnimalGoat;
+			levelData.current.animals[row][col] = Sprites.AnimalGoat;
 			break;
 		case AnimalGoat:
-			levelData.mapAnimals[row][col] = Sprites.AnimalPig;
+			levelData.current.animals[row][col] = Sprites.AnimalPig;
 			break;
 		case AnimalPig:
-			levelData.mapAnimals[row][col] = Sprites.AnimalDuck;
+			levelData.current.animals[row][col] = Sprites.AnimalDuck;
 			break;
 		case AnimalDuck:
-			levelData.mapAnimals[row][col] = Sprites.AnimalNone;
+			levelData.current.animals[row][col] = Sprites.AnimalNone;
 			break;
 		}
-		Gdx.app.log("toggleAnimal", "A:row="+row+",col="+col+",value="+levelData.mapAnimals[row][col]);
+		Gdx.app.log("toggleAnimal", "A:row="+row+",col="+col+",value="+levelData.current.animals[row][col]);
 
 		// Update our level map
 		updateLevelMap();
@@ -166,46 +166,49 @@ public class LevelEditorScreen extends LevelScreen<WoolyGroupData> {
 	protected void onMapEdgeClick(int row, int col, MapEdge fenceDirection) {
 		// Even row? must be a horizontal fence to be placed
 		if(MapEdge.Horizontal == fenceDirection) {
-			Gdx.app.log("toggleFence", "H:row="+row+",col="+col+",value="+levelData.mapFenceHorizontal[row][col]);
-			switch(levelData.mapFenceHorizontal[row][col]) {
+			Gdx.app.log("toggleFence", "H:row="+row+",col="+col+",value="+levelData.current.horizontal[row][col]);
+			switch(levelData.current.horizontal[row][col]) {
 			case FenceHorizontal:
-				levelData.mapFenceHorizontal[row][col] = Sprites.FenceHorizontalBroken;
-				levelData.numFences--;
+				levelData.current.horizontal[row][col] = Sprites.FenceHorizontalBroken;
+				levelData.current.numFences--;
 				break;
 			case FenceHorizontalBroken:
-				levelData.mapFenceHorizontal[row][col] = Sprites.FenceHorizontalEmpty;
+				levelData.current.horizontal[row][col] = Sprites.FenceHorizontalEmpty;
 				break;
 			default:
 			case FenceHorizontalEmpty:
-				levelData.mapFenceHorizontal[row][col] = Sprites.FenceHorizontal;
-				levelData.numFences++;
+				levelData.current.horizontal[row][col] = Sprites.FenceHorizontal;
+				levelData.current.numFences++;
 				break;
 			}
 		}
 		// Odd row? must be a vertical fence to be placed
 		else {
-			Gdx.app.log("toggleFence", "V:row="+row+",col="+col+",value="+levelData.mapFenceVertical[row][col]);
-			switch(levelData.mapFenceVertical[row][col]) {
+			Gdx.app.log("toggleFence", "V:row="+row+",col="+col+",value="+levelData.current.vertical[row][col]);
+			switch(levelData.current.vertical[row][col]) {
 			case FenceVertical:
-				levelData.mapFenceVertical[row][col] = Sprites.FenceVerticalBroken;
-				levelData.numFences--;
+				levelData.current.vertical[row][col] = Sprites.FenceVerticalBroken;
+				levelData.current.numFences--;
 				break;
 			case FenceVerticalBroken:
-				levelData.mapFenceVertical[row][col] = Sprites.FenceVerticalEmpty;
+				levelData.current.vertical[row][col] = Sprites.FenceVerticalEmpty;
 				break;
 			default:
 			case FenceVerticalEmpty:
-				levelData.mapFenceVertical[row][col] = Sprites.FenceVertical;
-				levelData.numFences++;
+				levelData.current.vertical[row][col] = Sprites.FenceVertical;
+				levelData.current.numFences++;
 				break;
 			}
 		}
+		
+		// Test to see if the level is done
+		System.out.println("isLevelDone=" + levelData.current.isLevelDone());
 		
 		// Update our level map
 		updateLevelMap();
 		
 		// Update our fence count label
-		fencesLabel.setText(""+levelData.numFences);
+		fencesLabel.setText(""+levelData.current.numFences);
 	}
 
 	@Override
@@ -214,10 +217,10 @@ public class LevelEditorScreen extends LevelScreen<WoolyGroupData> {
 		super.onResetClick();
 		
 		// Update our fences label
-		fencesLabel.setText("" + levelData.numFences);
+		fencesLabel.setText("" + levelData.current.numFences);
 		
 		// Update our dogs label
-		dogsLabel.setText("" + levelData.numDogs);
+		dogsLabel.setText("" + levelData.current.numDogs);
 	}
 
 	@Override
@@ -225,7 +228,7 @@ public class LevelEditorScreen extends LevelScreen<WoolyGroupData> {
 		// Handle Save button
 		if(actor.equals(saveButton)) {
 			// Take the current level state and make it the original level state
-			levelData.updateOriginal();
+			levelData.saveAsOriginal();
 			
 			// Save the level state to a file
 			JsonDataLoader.save(levelData);

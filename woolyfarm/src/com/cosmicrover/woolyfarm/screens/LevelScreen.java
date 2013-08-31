@@ -24,8 +24,8 @@ import com.cosmicrover.core.assets.loaders.JsonDataLoader;
 import com.cosmicrover.core.screens.AbstractScreen;
 import com.cosmicrover.core.screens.LoadingScreen;
 import com.cosmicrover.core.ui.utils.AnimationDrawable;
+import com.cosmicrover.woolyfarm.assets.MapData.Sprites;
 import com.cosmicrover.woolyfarm.assets.WoolyLevelData;
-import com.cosmicrover.woolyfarm.assets.WoolyLevelData.Sprites;
 
 public abstract class LevelScreen<G extends GroupData<WoolyLevelData>> extends AbstractScreen<WoolyLevelData,G> {
 	/// Scene2d used by this Screen
@@ -295,12 +295,13 @@ public abstract class LevelScreen<G extends GroupData<WoolyLevelData>> extends A
         TextureRegionDrawable verticalSpacer = new TextureRegionDrawable(spriteRegions.get(Sprites.FenceVerticalSpacer.toString()));
         TextureRegionDrawable animalNone = new TextureRegionDrawable(spriteRegions.get(Sprites.AnimalNone.toString()));
 
+        System.out.println("rows="+levelData.current.rows+",cols="+levelData.current.cols);
         // Now create the animal map data
-		for(int row=0;row<levelData.mapRows; row++) {
-			for(int col=0; col<levelData.mapCols; col++) {
+		for(int row=0;row<levelData.current.rows; row++) {
+			for(int col=0; col<levelData.current.cols; col++) {
 				// Select alternating grass image
 				Image anGroundImage;
-				switch(levelData.origGround[row][col]) {
+				switch(levelData.current.ground[row][col]) {
 				case GroundDirt1:
 					anGroundImage = new Image(dirt1);
 					break;
@@ -336,10 +337,10 @@ public abstract class LevelScreen<G extends GroupData<WoolyLevelData>> extends A
 		}
 
 		// Create animals and fence post layer
-		for(int row=0;row<levelData.mapRows+1; row++) {
+		for(int row=0;row<levelData.current.rows+1; row++) {
 			// First row? then add fence post spacers and horizontal spacers to vertical fence table
 			if(row == 0) {
-				for(int col=0; col<levelData.mapCols; col++) {
+				for(int col=0; col<levelData.current.cols; col++) {
 					verticalEdgesAndSquares.add(new Image(postSpacer));
 					verticalEdgesAndSquares.add(new Image(horizontalSpacer));
 				}
@@ -349,12 +350,12 @@ public abstract class LevelScreen<G extends GroupData<WoolyLevelData>> extends A
 			}
 			
 			// Add fence posts and horizontal spacers to animal table
-			for(int col=0; col<levelData.mapCols; col++) {
+			for(int col=0; col<levelData.current.cols; col++) {
 				// Add initial fence post and horizontal spacer to the animal table
 				actionTable.add(new Image(fencePost));
 				Button anButtonHorizontal = new Button(horizontalSpacer);
 				anButtonHorizontal.addListener(buttonListener);
-				anButtonHorizontal.setName("he"+((row*(levelData.mapCols+1)) + col));
+				anButtonHorizontal.setName("he"+((row*(levelData.current.cols+1)) + col));
 				actionTable.add(anButtonHorizontal);
 
 				if(col == 0) {
@@ -363,7 +364,7 @@ public abstract class LevelScreen<G extends GroupData<WoolyLevelData>> extends A
 				}
 				// Add horizontal fence
 				Image anFenceHorizontal;
-				switch(levelData.mapFenceHorizontal[row][col]) {
+				switch(levelData.current.horizontal[row][col]) {
 				case FenceHorizontalBroken:
 					anFenceHorizontal = new Image(fenceBrokenHorizontal);
 					break;
@@ -376,7 +377,7 @@ public abstract class LevelScreen<G extends GroupData<WoolyLevelData>> extends A
 					anFenceHorizontal = new Image(fenceEmptyHorizontal);
 					break;
 				}
-				anFenceHorizontal.setName("he"+((row*(levelData.mapCols+1)) + col));
+				anFenceHorizontal.setName("he"+((row*(levelData.current.cols+1)) + col));
 				horizontalEdges.add(anFenceHorizontal);
 			}
 			// Add final fence post to the animal table
@@ -387,24 +388,24 @@ public abstract class LevelScreen<G extends GroupData<WoolyLevelData>> extends A
 			horizontalEdges.row();
 
 			// Skip the last row of vertical spacers and animals
-			if(row < levelData.mapRows) {
+			if(row < levelData.current.rows) {
 				// Add vertical spacers and animals to animal table
-				for(int col=0; col<levelData.mapCols; col++) {
+				for(int col=0; col<levelData.current.cols; col++) {
 					// Add vertical edge button to action table
 					Button anButtonVertical = new Button(verticalSpacer);
 					anButtonVertical.addListener(buttonListener);
-					anButtonVertical.setName("ve"+((row*(levelData.mapCols+1)) + col));
+					anButtonVertical.setName("ve"+((row*(levelData.current.cols+1)) + col));
 					actionTable.add(anButtonVertical);
 
 					// Add map square button to action table
 					Button anButtonSquare = new Button(horizontalSpacer);
 					anButtonSquare.addListener(buttonListener);
-					anButtonSquare.setName("ms"+((row*(levelData.mapCols+1)) + col));
+					anButtonSquare.setName("ms"+((row*(levelData.current.cols+1)) + col));
 					actionTable.add(anButtonSquare);
 
 					// Add vertical fence
 					Image anFenceVertical;
-					switch(levelData.mapFenceVertical[row][col]) {
+					switch(levelData.current.vertical[row][col]) {
 					case FenceVerticalBroken:
 						anFenceVertical = new Image(fenceBrokenVertical);
 						break;
@@ -417,7 +418,7 @@ public abstract class LevelScreen<G extends GroupData<WoolyLevelData>> extends A
 						anFenceVertical = new Image(fenceEmptyVertical);
 						break;
 					}
-					anFenceVertical.setName("ve"+((row*(levelData.mapCols+1)) + col));
+					anFenceVertical.setName("ve"+((row*(levelData.current.cols+1)) + col));
 					verticalEdgesAndSquares.add(anFenceVertical);
 					
 					// Create animations for each animal type
@@ -438,7 +439,7 @@ public abstract class LevelScreen<G extends GroupData<WoolyLevelData>> extends A
 			        animalWolf.setRandomStart();
 			        
 					Image anMapSquare;
-					switch(levelData.mapAnimals[row][col]) {
+					switch(levelData.current.animals[row][col]) {
 					case AnimalDuck:
 						anMapSquare = new Image(animalDuck);
 						break;
@@ -460,22 +461,22 @@ public abstract class LevelScreen<G extends GroupData<WoolyLevelData>> extends A
 						anMapSquare = new Image(animalNone);
 						break;
 					}
-					anMapSquare.setName("ms"+((row*(levelData.mapCols+1)) + col));
+					anMapSquare.setName("ms"+((row*(levelData.current.cols+1)) + col));
 					verticalEdgesAndSquares.add(anMapSquare);
 				}
 				// Add final vertical spacer on animal table
 				Button anButtonVertical = new Button(verticalSpacer);
 				anButtonVertical.addListener(buttonListener);
-				anButtonVertical.setName("ve"+((row*(levelData.mapCols+1)) + levelData.mapCols));
+				anButtonVertical.setName("ve"+((row*(levelData.current.cols+1)) + levelData.current.cols));
 				actionTable.add(anButtonVertical);
 				actionTable.row();
 				// Add final vertical spacer to horizontal fence table
-				horizontalEdges.add(new Image(verticalSpacer)).colspan(levelData.mapCols*2);
+				horizontalEdges.add(new Image(verticalSpacer)).colspan(levelData.current.cols*2);
 				horizontalEdges.row();
 
 				// Add final vertical fence
 				Image anFenceVertical;
-				switch(levelData.mapFenceVertical[row][levelData.mapCols]) {
+				switch(levelData.current.vertical[row][levelData.current.cols]) {
 				case FenceVerticalBroken:
 					anFenceVertical = new Image(fenceBrokenVertical);
 					// Don't add listener for broken fences
@@ -489,13 +490,13 @@ public abstract class LevelScreen<G extends GroupData<WoolyLevelData>> extends A
 					anFenceVertical = new Image(fenceEmptyVertical);
 					break;
 				}
-				anFenceVertical.setName("ve"+((row*(levelData.mapCols+1)) + levelData.mapCols));
+				anFenceVertical.setName("ve"+((row*(levelData.current.cols+1)) + levelData.current.cols));
 				verticalEdgesAndSquares.add(anFenceVertical);
 				verticalEdgesAndSquares.row();
 			}
 		}
 		// Add final row of spacers to vertical fence table
-		for(int col=0; col<levelData.mapCols; col++) {
+		for(int col=0; col<levelData.current.cols; col++) {
 			verticalEdgesAndSquares.add(new Image(postSpacer));
 			verticalEdgesAndSquares.add(new Image(horizontalSpacer));
 		}
@@ -525,8 +526,8 @@ public abstract class LevelScreen<G extends GroupData<WoolyLevelData>> extends A
 					if(anButton != null) {
 						// Toggle the fence at the location specified in the name (minus the ac characters)
 						int location = Integer.parseInt(anButton.getName().substring(2));
-						int row = location / (levelData.mapCols+1);
-						int col = location % (levelData.mapCols+1);
+						int row = location / (levelData.current.cols+1);
+						int col = location % (levelData.current.cols+1);
 						onMapSquareClick(row, col);
 					}
 				}
@@ -537,8 +538,8 @@ public abstract class LevelScreen<G extends GroupData<WoolyLevelData>> extends A
 					if(anButton != null) {
 						// Toggle the fence at the location specified in the name (minus the vf characters)
 						int location = Integer.parseInt(anButton.getName().substring(2));
-						int row = location / (levelData.mapCols+1);
-						int col = location % (levelData.mapCols+1);
+						int row = location / (levelData.current.cols+1);
+						int col = location % (levelData.current.cols+1);
 						onMapEdgeClick(row, col, MapEdge.Vertical);
 					}
 				}
@@ -549,8 +550,8 @@ public abstract class LevelScreen<G extends GroupData<WoolyLevelData>> extends A
 					if(anButton != null) {
 						// Toggle the fence at the location specified in the name (minus the hf characters)
 						int location = Integer.parseInt(anButton.getName().substring(2));
-						int row = location / (levelData.mapCols+1);
-						int col = location % (levelData.mapCols+1);
+						int row = location / (levelData.current.cols+1);
+						int col = location % (levelData.current.cols+1);
 						onMapEdgeClick(row, col, MapEdge.Horizontal);
 					}
 				}

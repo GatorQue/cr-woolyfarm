@@ -18,9 +18,9 @@ import com.badlogic.gdx.scenes.scene2d.utils.TextureRegionDrawable;
 import com.cosmicrover.core.GameEnvironment.Platform;
 import com.cosmicrover.core.assets.GameData;
 import com.cosmicrover.core.GameManager;
+import com.cosmicrover.woolyfarm.assets.MapData.Sprites;
 import com.cosmicrover.woolyfarm.assets.WoolyGroupData;
 import com.cosmicrover.woolyfarm.assets.WoolyLevelData;
-import com.cosmicrover.woolyfarm.assets.WoolyLevelData.Sprites;
 
 public class LevelPlayScreen extends LevelScreen<WoolyGroupData> {
 	protected Label fencesLabel = null;
@@ -78,12 +78,12 @@ public class LevelPlayScreen extends LevelScreen<WoolyGroupData> {
 
 		// Add fences icon and number of fences remaining label
 		leftTable.add(new Image(fencesIcon));
-		fencesLabel = new Label(""+levelData.numFences, labelStyle);
+		fencesLabel = new Label(""+levelData.current.numFences, labelStyle);
 		leftTable.add(fencesLabel).width(32.0f).spaceRight(5.0f);
 		
 		// Add dogs icon and number of dogs remaining label
 		leftTable.add(new Image(dogsIcon));
-		dogsLabel = new Label(""+levelData.numDogs, labelStyle);
+		dogsLabel = new Label(""+levelData.current.numDogs, labelStyle);
 		leftTable.add(dogsLabel).width(32.0f);
 		stageTable.add(leftTable).left().expandX();
 		
@@ -105,27 +105,27 @@ public class LevelPlayScreen extends LevelScreen<WoolyGroupData> {
 	
 	@Override
 	protected void onMapSquareClick(int row, int col) {
-		Gdx.app.log("toggleAnimal", "A:row="+row+",col="+col+",value="+levelData.mapAnimals[row][col]);
-		switch(levelData.mapAnimals[row][col]) {
+		Gdx.app.log("toggleAnimal", "A:row="+row+",col="+col+",value="+levelData.current.animals[row][col]);
+		switch(levelData.current.animals[row][col]) {
 		case AnimalDuck:
-			levelData.mapAnimals[row][col] = Sprites.AnimalGoat;
+			levelData.current.animals[row][col] = Sprites.AnimalGoat;
 			break;
 		case AnimalGoat:
-			levelData.mapAnimals[row][col] = Sprites.AnimalPig;
+			levelData.current.animals[row][col] = Sprites.AnimalPig;
 			break;
 		case AnimalPig:
-			levelData.mapAnimals[row][col] = Sprites.AnimalSheep;
+			levelData.current.animals[row][col] = Sprites.AnimalSheep;
 			break;
 		case AnimalSheep:
-			levelData.mapAnimals[row][col] = Sprites.AnimalWolf;
+			levelData.current.animals[row][col] = Sprites.AnimalWolf;
 			break;
 		case AnimalWolf:
-			levelData.mapAnimals[row][col] = Sprites.AnimalNone;
+			levelData.current.animals[row][col] = Sprites.AnimalNone;
 			break;
 		default:
 			Gdx.app.error("toggleAnimal", "Unknown animal type");
 		case AnimalNone:
-			levelData.mapAnimals[row][col] = Sprites.AnimalDuck;
+			levelData.current.animals[row][col] = Sprites.AnimalDuck;
 			break;
 		}
 
@@ -137,28 +137,28 @@ public class LevelPlayScreen extends LevelScreen<WoolyGroupData> {
 	protected void onMapEdgeClick(int row, int col, MapEdge fenceDirection) {
 		// Even row? must be a horizontal fence to be placed
 		if(MapEdge.Horizontal == fenceDirection) {
-			Gdx.app.log("toggleFence", "H:row="+row+",col="+col+",value="+levelData.mapFenceHorizontal[row][col]);
+			Gdx.app.log("toggleFence", "H:row="+row+",col="+col+",value="+levelData.current.horizontal[row][col]);
 			// Toggle the fence type at the location indicated
-			if(Sprites.FenceHorizontalEmpty == levelData.mapFenceHorizontal[row][col] && levelData.numFences > 0) {
-				levelData.mapFenceHorizontal[row][col] = Sprites.FenceHorizontal;
-				levelData.numFences--;
+			if(Sprites.FenceHorizontalEmpty == levelData.current.horizontal[row][col] && levelData.current.numFences > 0) {
+				levelData.current.horizontal[row][col] = Sprites.FenceHorizontal;
+				levelData.current.numFences--;
 			}
-			else if(Sprites.FenceHorizontal == levelData.mapFenceHorizontal[row][col]) {
-				levelData.mapFenceHorizontal[row][col] = Sprites.FenceHorizontalEmpty;
-				levelData.numFences++;
+			else if(Sprites.FenceHorizontal == levelData.current.horizontal[row][col]) {
+				levelData.current.horizontal[row][col] = Sprites.FenceHorizontalEmpty;
+				levelData.current.numFences++;
 			}
 		}
 		// Odd row? must be a vertical fence to be placed
 		else {
-			Gdx.app.log("toggleFence", "V:row="+row+",col="+col+",value="+levelData.mapFenceVertical[row][col]);
+			Gdx.app.log("toggleFence", "V:row="+row+",col="+col+",value="+levelData.current.vertical[row][col]);
 			// Toggle the fence type at the location indicated
-			if(Sprites.FenceVerticalEmpty == levelData.mapFenceVertical[row][col] && levelData.numFences > 0) {
-				levelData.mapFenceVertical[row][col] = Sprites.FenceVertical;
-				levelData.numFences--;
+			if(Sprites.FenceVerticalEmpty == levelData.current.vertical[row][col] && levelData.current.numFences > 0) {
+				levelData.current.vertical[row][col] = Sprites.FenceVertical;
+				levelData.current.numFences--;
 			}
-			else if(Sprites.FenceVertical == levelData.mapFenceVertical[row][col]) {
-				levelData.mapFenceVertical[row][col] = Sprites.FenceVerticalEmpty;
-				levelData.numFences++;
+			else if(Sprites.FenceVertical == levelData.current.vertical[row][col]) {
+				levelData.current.vertical[row][col] = Sprites.FenceVerticalEmpty;
+				levelData.current.numFences++;
 			}
 		}
 		
@@ -166,7 +166,7 @@ public class LevelPlayScreen extends LevelScreen<WoolyGroupData> {
 		updateLevelMap();
 		
 		// Update our fence count label
-		fencesLabel.setText(""+levelData.numFences);
+		fencesLabel.setText(""+levelData.current.numFences);
 	}
 
 	@Override
@@ -175,10 +175,10 @@ public class LevelPlayScreen extends LevelScreen<WoolyGroupData> {
 		super.onResetClick();
 		
 		// Update our fences label
-		fencesLabel.setText("" + levelData.numFences);
+		fencesLabel.setText("" + levelData.current.numFences);
 		
 		// Update our dogs label
-		dogsLabel.setText("" + levelData.numDogs);
+		dogsLabel.setText("" + levelData.current.numDogs);
 	}
 
 
@@ -189,4 +189,5 @@ public class LevelPlayScreen extends LevelScreen<WoolyGroupData> {
 			// TODO: Provide hint implementation
 		}
 	}
+	
 }
