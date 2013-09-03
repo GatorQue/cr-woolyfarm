@@ -105,29 +105,7 @@ public class LevelPlayScreen extends LevelScreen<WoolyGroupData> {
 	
 	@Override
 	protected void onMapSquareClick(int row, int col) {
-		Gdx.app.log("toggleAnimal", "A:row="+row+",col="+col+",value="+levelData.current.animals[row][col]);
-		switch(levelData.current.animals[row][col]) {
-		case AnimalDuck:
-			levelData.current.animals[row][col] = Sprites.AnimalGoat;
-			break;
-		case AnimalGoat:
-			levelData.current.animals[row][col] = Sprites.AnimalPig;
-			break;
-		case AnimalPig:
-			levelData.current.animals[row][col] = Sprites.AnimalSheep;
-			break;
-		case AnimalSheep:
-			levelData.current.animals[row][col] = Sprites.AnimalWolf;
-			break;
-		case AnimalWolf:
-			levelData.current.animals[row][col] = Sprites.AnimalNone;
-			break;
-		default:
-			Gdx.app.error("toggleAnimal", "Unknown animal type");
-		case AnimalNone:
-			levelData.current.animals[row][col] = Sprites.AnimalDuck;
-			break;
-		}
+		// TODO: Add dog movement
 
 		// Update our level map
 		updateLevelMap();
@@ -137,28 +115,18 @@ public class LevelPlayScreen extends LevelScreen<WoolyGroupData> {
 	protected void onMapEdgeClick(int row, int col, MapEdge fenceDirection) {
 		// Even row? must be a horizontal fence to be placed
 		if(MapEdge.Horizontal == fenceDirection) {
-			Gdx.app.log("toggleFence", "H:row="+row+",col="+col+",value="+levelData.current.horizontal[row][col]);
-			// Toggle the fence type at the location indicated
+			// Place a horizontal fence at the location specified if empty
 			if(Sprites.FenceHorizontalEmpty == levelData.current.horizontal[row][col] && levelData.current.numFences > 0) {
 				levelData.current.horizontal[row][col] = Sprites.FenceHorizontal;
 				levelData.current.numFences--;
 			}
-			else if(Sprites.FenceHorizontal == levelData.current.horizontal[row][col]) {
-				levelData.current.horizontal[row][col] = Sprites.FenceHorizontalEmpty;
-				levelData.current.numFences++;
-			}
 		}
 		// Odd row? must be a vertical fence to be placed
 		else {
-			Gdx.app.log("toggleFence", "V:row="+row+",col="+col+",value="+levelData.current.vertical[row][col]);
-			// Toggle the fence type at the location indicated
+			// Place a vertical fence at the location specified if empty
 			if(Sprites.FenceVerticalEmpty == levelData.current.vertical[row][col] && levelData.current.numFences > 0) {
 				levelData.current.vertical[row][col] = Sprites.FenceVertical;
 				levelData.current.numFences--;
-			}
-			else if(Sprites.FenceVertical == levelData.current.vertical[row][col]) {
-				levelData.current.vertical[row][col] = Sprites.FenceVerticalEmpty;
-				levelData.current.numFences++;
 			}
 		}
 		
@@ -167,12 +135,25 @@ public class LevelPlayScreen extends LevelScreen<WoolyGroupData> {
 		
 		// Update our fence count label
 		fencesLabel.setText(""+levelData.current.numFences);
+		
+		// Are we done playing this level?
+		if(levelData.current.isLevelDone() || (levelData.current.numFences == 0 && levelData.current.numDogs == 0)) {
+			System.out.println("End of level reached!");
+			// Switch to end level screen
+			gameManager.setScreen(GameData.LEVEL_END_SCREEN);
+		}
 	}
 
 	@Override
 	protected void onResetClick() {
 		// Call our superclass
 		super.onResetClick();
+		
+		// Remove all fences from the level
+		levelData.current.removeFences();
+		
+		// Update our level map
+		updateLevelMap();
 		
 		// Update our fences label
 		fencesLabel.setText("" + levelData.current.numFences);

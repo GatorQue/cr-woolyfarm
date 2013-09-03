@@ -259,9 +259,6 @@ public abstract class LevelScreen<G extends GroupData<WoolyLevelData>> extends A
 	protected void onResetClick() {
 		// Reset the level
 		levelData.resetLevel();
-		
-		// Update our level map
-		updateLevelMap();
 	}
 
 	protected void updateLevelMap() {
@@ -295,7 +292,6 @@ public abstract class LevelScreen<G extends GroupData<WoolyLevelData>> extends A
         TextureRegionDrawable verticalSpacer = new TextureRegionDrawable(spriteRegions.get(Sprites.FenceVerticalSpacer.toString()));
         TextureRegionDrawable animalNone = new TextureRegionDrawable(spriteRegions.get(Sprites.AnimalNone.toString()));
 
-        System.out.println("rows="+levelData.current.rows+",cols="+levelData.current.cols);
         // Now create the animal map data
 		for(int row=0;row<levelData.current.rows; row++) {
 			for(int col=0; col<levelData.current.cols; col++) {

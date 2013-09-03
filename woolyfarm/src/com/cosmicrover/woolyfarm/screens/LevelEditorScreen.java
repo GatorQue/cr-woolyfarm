@@ -203,6 +203,8 @@ public class LevelEditorScreen extends LevelScreen<WoolyGroupData> {
 		
 		// Test to see if the level is done
 		System.out.println("isLevelDone=" + levelData.current.isLevelDone());
+		System.out.println("isGrouped=" + levelData.current.isGrouped(Sprites.AnimalSheep, 2));
+		System.out.println("isGrouped=" + levelData.current.isGrouped(Sprites.AnimalGoat, 2));
 		
 		// Update our level map
 		updateLevelMap();
@@ -216,6 +218,9 @@ public class LevelEditorScreen extends LevelScreen<WoolyGroupData> {
 		// Call our superclass
 		super.onResetClick();
 		
+		// Update our level map
+		updateLevelMap();
+
 		// Update our fences label
 		fencesLabel.setText("" + levelData.current.numFences);
 		
