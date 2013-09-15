@@ -82,31 +82,8 @@ public abstract class LevelScreen<G extends GroupData<WoolyLevelData>> extends A
 		if(levelData == null) {
 			// Not level editor? then create a new level and switch to level editor
 			if(GameData.LEVEL_EDITOR_SCREEN != screenId) {
-				// Retrieve the GroupData for the current group
-				G groupData = gameManager.data.getCurrentGroup();
-				
-				// Get the next levelId value from the current group
-				int levelId = groupData.levels.getSize();
-				
-				// Create a new level for our editor
-				WoolyLevelData levelData = groupData.createLevel(levelId);
-
-				// Create an empty level to edit
-				levelData.createEmpty();
-
-				// Set our level data flags
-				levelData.locked = false;
-				levelData.completed = false;
-				levelData.loaded = true;
-				
-				// Create an empty level to edit
-				groupData.levels.registerLevel(levelData);
-	
-				// Register this level as the current level
-				gameManager.data.setCurrentLevel(levelData.getFilename());
-	
-				// Switch to level editor screen to create a new level for this group
-				gameManager.setScreen(GameData.LEVEL_EDITOR_SCREEN);
+				// Switch to Level Settings screen to set level settings for new level
+				gameManager.setScreen(GameData.LEVEL_SETTINGS_SCREEN);
 			}
 			// Level data was not created, switch back to previous screen
 			else {
@@ -140,7 +117,7 @@ public abstract class LevelScreen<G extends GroupData<WoolyLevelData>> extends A
 			if(isFirstTime()) {
 				// Create a hash map for looking up texture regions by string name found in SpriteComponent
 				spriteRegions = new HashMap<String, AtlasRegion>();
-				spriteTextureAtlas = gameManager.getAssetManager().get("textures/sprites.pack");
+				spriteTextureAtlas = gameManager.getAssetManager().get("sprites.pack");
 				// Create a map of each region available in our sprite TextureAtlas
 				for (AtlasRegion region : spriteTextureAtlas.getRegions()) {
 					spriteRegions.put(region.name, region);
@@ -297,6 +274,13 @@ public abstract class LevelScreen<G extends GroupData<WoolyLevelData>> extends A
 			for(int col=0; col<levelData.current.cols; col++) {
 				// Select alternating grass image
 				Image anGroundImage;
+				if(levelData == null) {
+					Gdx.app.error("LevelScreen", "levelData is null!");
+				} else if(levelData.current == null) {
+					Gdx.app.error("LevelScreen", "levelData.current is null!");
+				} else if(levelData.current.ground[row][col] == null) {
+					Gdx.app.error("LevelScreen", "levelData.current.ground is null at row="+row+",col="+col+"!");
+				}
 				switch(levelData.current.ground[row][col]) {
 				case GroundDirt1:
 					anGroundImage = new Image(dirt1);

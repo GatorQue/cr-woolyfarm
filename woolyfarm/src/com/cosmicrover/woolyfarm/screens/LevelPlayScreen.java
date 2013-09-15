@@ -49,7 +49,7 @@ public class LevelPlayScreen extends LevelScreen<WoolyGroupData> {
         TextureRegionDrawable hintIcon = new TextureRegionDrawable(spriteRegions.get("hint_icon"));
 
         // Retrieve the font we will use for text messages
-		Texture fontTexture = new Texture(Gdx.files.internal("textures/font_normal.png"));
+		Texture fontTexture = new Texture(Gdx.files.internal("fonts/font_normal.png"));
 		fontTexture.setFilter(TextureFilter.Linear, TextureFilter.MipMapLinearLinear);
 		TextureRegion fontRegion = new TextureRegion(fontTexture);
 		BitmapFont labelFont = new BitmapFont(Gdx.files.internal("fonts/normal.fnt"), fontRegion, false);

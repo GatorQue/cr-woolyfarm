@@ -104,7 +104,7 @@ public class GameManager<L extends LevelData, G extends GroupData<L>> implements
     	// Does the user want to exit the application? then schedule an exit now
     	if(GameData.EXIT_GAME_SCREEN == screenId) {
     		// Log the application exit request and schedule an exit now
-        	Gdx.app.log( "GameManager:setScreen()", "Exit application requested");
+        	Gdx.app.debug( "GameManager:setScreen()", "Exit application requested("+screenId+")");
     		Gdx.app.exit();
     	} else {
     		// Retrieve our AbstractScreen base class for the screenId provided
@@ -112,7 +112,7 @@ public class GameManager<L extends LevelData, G extends GroupData<L>> implements
     		game.setScreen(anScreen);
 
     		// Log the change of screens event
-        	Gdx.app.log( "GameManager:setScreen()", "Changing to " + anScreen.getName() + "(" + screenId + ")");
+        	Gdx.app.debug( "GameManager:setScreen()", "Changing to " + anScreen.getName() + "(" + screenId + ")");
     	}
     }
     
@@ -122,6 +122,16 @@ public class GameManager<L extends LevelData, G extends GroupData<L>> implements
      */
     public final void setBackScreen(int screenId) {
     	if(backButtonHandler != null) {
+        	// Does the user want to exit the application? then schedule an exit now
+        	if(GameData.EXIT_GAME_SCREEN == screenId) {
+        		// Log the application exit request and schedule an exit now
+            	Gdx.app.debug( "GameManager:setBackScreen()", "Setting back button to Exit Application");
+        	} else {
+        		// Retrieve the screen specified and log the back button change
+        		AbstractScreen<L,G> anScreen = data.getScreen(screenId);
+            	Gdx.app.debug( "GameManager:setBackScreen()", "Setting back button to " + anScreen.getName() + "(" + screenId + ")");
+        	}
+        	// Tell the BackButtonHandler about the back button change
     		backButtonHandler.setScreenId(screenId);
     	}
     }
@@ -154,16 +164,6 @@ public class GameManager<L extends LevelData, G extends GroupData<L>> implements
     	// Update our GameData object
     	this.data = data;
 
-		// Do we need a back button handler?
-    	if(Platform.Android == gameEnvironment.getPlatform() ||
-    	   Platform.iOS == gameEnvironment.getPlatform()) {
-    		// Register our handler with our InputMultiplexer
-    		inputMultiplexer.addProcessor(new BackButtonHandler());
-
-    		// Make sure we catch the Back key (Android/iOS) input events
-    		Gdx.app.getInput().setCatchBackKey(true);
-    	}
-            	
 		// Call the init method on this new instance
 		data.init(this);
     			
@@ -176,6 +176,17 @@ public class GameManager<L extends LevelData, G extends GroupData<L>> implements
 
         // Make our inputMultiplexer the primary input listener
 	    Gdx.input.setInputProcessor(this.inputMultiplexer);
+
+	    // Do we need a back button handler?
+    	if(Platform.Android == gameEnvironment.getPlatform() ||
+    	   Platform.iOS == gameEnvironment.getPlatform()) {
+    		// Register our handler with our InputMultiplexer
+    		backButtonHandler = new BackButtonHandler();
+    		inputMultiplexer.addProcessor(backButtonHandler);
+
+    		// Make sure we catch the Back key (Android/iOS) input events
+    		Gdx.input.setCatchBackKey(true);
+    	}
     }
  
     /**
@@ -234,16 +245,16 @@ public class GameManager<L extends LevelData, G extends GroupData<L>> implements
     	/////////////////////////////////////////////////////////////////////////
 		@Override
 		public boolean keyDown(int keycode) {
-			return false;
-		}
-
-		@Override
-		public boolean keyUp(int keycode) {
 			boolean consumed = false;
 
-			if(keycode == Input.Keys.BACK && enabled) {
-				// Set our screen to the backScreenId set earlier
-				setScreen(screenId);
+			if(keycode == Input.Keys.BACK) {
+				if(enabled) {
+					// Set our screen to the backScreenId set earlier
+					setScreen(screenId);
+				} else {
+					// Log the back button press but do nothing
+					Gdx.app.debug("BackButtonHandler", "Back Button pressed, but disabled");
+				}
 				
 				// Set our consumed flag to true
 				consumed = true;
@@ -251,6 +262,11 @@ public class GameManager<L extends LevelData, G extends GroupData<L>> implements
 
 			// Return the consumed flag set above
 			return consumed;
+		}
+
+		@Override
+		public boolean keyUp(int keycode) {
+			return false;
 		}
 
 		@Override

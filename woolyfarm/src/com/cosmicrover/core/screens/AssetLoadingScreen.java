@@ -45,7 +45,7 @@ public class AssetLoadingScreen<L extends LevelData, G extends GroupData<L>> ext
 		super("AssetLoadingScreen", GameData.ASSET_LOADING_SCREEN, gameManager, lagDelay_s);
 
 		// Load the assets we need for displaying the loading screen immediately
-		gameManager.getAssetManager().load("textures/loading.pack", TextureAtlas.class);
+		gameManager.getAssetManager().load("loading.pack", TextureAtlas.class);
         gameManager.getAssetManager().finishLoading();
 	}
 
@@ -89,7 +89,7 @@ public class AssetLoadingScreen<L extends LevelData, G extends GroupData<L>> ext
         stage = new Stage();
 
         // Get our TextureAtlas from the manager
-        TextureAtlas atlas = gameManager.getAssetManager().get("textures/loading.pack", TextureAtlas.class);
+        TextureAtlas atlas = gameManager.getAssetManager().get("loading.pack", TextureAtlas.class);
 
         // Grab the regions from the atlas and create some images
         logo = new Image(atlas.findRegion("libgdx-logo"));

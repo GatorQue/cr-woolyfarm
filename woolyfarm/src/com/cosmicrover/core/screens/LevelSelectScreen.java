@@ -92,7 +92,7 @@ public class LevelSelectScreen<L extends LevelData, G extends GroupData<L>> exte
 		if(isFirstTime()) {
 			// Create a hash map for looking up texture regions by string name found in SpriteComponent
 			levelRegions = new HashMap<String, AtlasRegion>();
-			levelTextureAtlas = gameManager.getAssetManager().get("textures/level_select.pack");
+			levelTextureAtlas = gameManager.getAssetManager().get("level_select.pack");
 			// Create a map of each region available in our sprite TextureAtlas
 			for (AtlasRegion region : levelTextureAtlas.getRegions()) {
 				levelRegions.put(region.name, region);
@@ -143,7 +143,7 @@ public class LevelSelectScreen<L extends LevelData, G extends GroupData<L>> exte
 
 	private void createStage() {
         // Retrieve the font we will use for text messages
-		Texture fontTexture = new Texture(Gdx.files.internal("textures/font_normal.png"));
+		Texture fontTexture = new Texture(Gdx.files.internal("fonts/font_normal.png"));
 		fontTexture.setFilter(TextureFilter.Linear, TextureFilter.MipMapLinearLinear);
 		TextureRegion fontRegion = new TextureRegion(fontTexture);
 		BitmapFont labelFont = new BitmapFont(Gdx.files.internal("fonts/normal.fnt"), fontRegion, false);

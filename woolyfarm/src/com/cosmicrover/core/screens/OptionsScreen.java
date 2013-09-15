@@ -1,4 +1,4 @@
-package com.cosmicrover.woolyfarm.screens;
+package com.cosmicrover.core.screens;
 
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.graphics.Color;
@@ -20,7 +20,6 @@ import com.cosmicrover.core.GameManager;
 import com.cosmicrover.core.assets.GameData;
 import com.cosmicrover.core.assets.GroupData;
 import com.cosmicrover.core.assets.LevelData;
-import com.cosmicrover.core.screens.AbstractScreen;
 
 public class OptionsScreen<L extends LevelData, G extends GroupData<L>> extends AbstractScreen<L,G> {
 	/// Scene2d used by this Screen
@@ -75,7 +74,7 @@ public class OptionsScreen<L extends LevelData, G extends GroupData<L>> extends 
 	        stage.addActor(table);
 	        
 	        // Retrieve the font we will use for text messages
-			Texture fontTexture = new Texture(Gdx.files.internal("textures/font_normal.png"));
+			Texture fontTexture = new Texture(Gdx.files.internal("fonts/font_normal.png"));
 			fontTexture.setFilter(TextureFilter.Linear, TextureFilter.MipMapLinearLinear);
 			TextureRegion fontRegion = new TextureRegion(fontTexture);
 			BitmapFont labelFont = new BitmapFont(Gdx.files.internal("fonts/normal.fnt"), fontRegion, false);

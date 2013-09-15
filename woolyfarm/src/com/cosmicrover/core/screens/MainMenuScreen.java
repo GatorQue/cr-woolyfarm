@@ -1,4 +1,4 @@
-package com.cosmicrover.woolyfarm.screens;
+package com.cosmicrover.core.screens;
 
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.graphics.Color;
@@ -6,6 +6,7 @@ import com.badlogic.gdx.graphics.GL10;
 import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.Texture.TextureFilter;
 import com.badlogic.gdx.graphics.g2d.BitmapFont;
+import com.badlogic.gdx.graphics.g2d.BitmapFont.BitmapFontData;
 import com.badlogic.gdx.graphics.g2d.TextureRegion;
 import com.badlogic.gdx.scenes.scene2d.Actor;
 import com.badlogic.gdx.scenes.scene2d.Stage;
@@ -20,7 +21,6 @@ import com.cosmicrover.core.GameManager;
 import com.cosmicrover.core.assets.GameData;
 import com.cosmicrover.core.assets.GroupData;
 import com.cosmicrover.core.assets.LevelData;
-import com.cosmicrover.core.screens.AbstractScreen;
 
 public class MainMenuScreen<L extends LevelData, G extends GroupData<L>> extends AbstractScreen<L,G> {
 	/// Scene2d used by this Screen
@@ -79,12 +79,13 @@ public class MainMenuScreen<L extends LevelData, G extends GroupData<L>> extends
 	        stage.addActor(table);
 	        
 	        // Retrieve the font we will use for text messages
-			Texture fontTexture = new Texture(Gdx.files.internal("textures/font_normal.png"));
+			Texture fontTexture = new Texture(Gdx.files.internal("fonts/font_normal.png"));
 			fontTexture.setFilter(TextureFilter.Linear, TextureFilter.MipMapLinearLinear);
 			TextureRegion fontRegion = new TextureRegion(fontTexture);
 			BitmapFont labelFont = new BitmapFont(Gdx.files.internal("fonts/normal.fnt"), fontRegion, false);
 			BitmapFont buttonFont = new BitmapFont(Gdx.files.internal("fonts/normal.fnt"), fontRegion, false);
 			buttonFont.setUseIntegerPositions(false);
+			BitmapFontData fontData = new BitmapFontData();
 
 			// Create our LabelStyle
 			LabelStyle labelStyle = new LabelStyle();

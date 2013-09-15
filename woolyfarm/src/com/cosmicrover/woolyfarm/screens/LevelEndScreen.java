@@ -85,7 +85,7 @@ public class LevelEndScreen<G extends GroupData<WoolyLevelData>> extends Abstrac
 			if(isFirstTime()) {
 				// Create a hash map for looking up texture regions by string name found in SpriteComponent
 				spriteRegions = new HashMap<String, AtlasRegion>();
-				spriteTextureAtlas = gameManager.getAssetManager().get("textures/sprites.pack");
+				spriteTextureAtlas = gameManager.getAssetManager().get("sprites.pack");
 				// Create a map of each region available in our sprite TextureAtlas
 				for (AtlasRegion region : spriteTextureAtlas.getRegions()) {
 					spriteRegions.put(region.name, region);
@@ -128,7 +128,7 @@ public class LevelEndScreen<G extends GroupData<WoolyLevelData>> extends Abstrac
 		stageTable.clear();
 		
         // Retrieve the font we will use for text messages
-		Texture fontTexture = new Texture(Gdx.files.internal("textures/font_normal.png"));
+		Texture fontTexture = new Texture(Gdx.files.internal("fonts/font_normal.png"));
 		fontTexture.setFilter(TextureFilter.Linear, TextureFilter.MipMapLinearLinear);
 		TextureRegion fontRegion = new TextureRegion(fontTexture);
 		BitmapFont labelFont = new BitmapFont(Gdx.files.internal("fonts/normal.fnt"), fontRegion, false);
